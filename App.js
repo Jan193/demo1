@@ -7,32 +7,13 @@
  */
 
 import React from 'react';
-import {View} from 'react-native';
-// import {Navigation} from 'react-native-navigation';
+import {View, Text} from 'react-native';
 
-import Home from './views/home';
 const App = () => {
   return (
     <View>
-      {/* <Home /> */}
-      test
+      <Text>test</Text>
     </View>
   );
 };
-// Navigation.events().registerAppLaunchedListener(async () => {
-//   Navigation.setRoot({
-//     root: {
-//       stack: {
-//         children: [
-//           {
-//             component: {
-//               name: 'home',
-//             },
-//           },
-//         ],
-//       },
-//     },
-//   });
-// });
-// Navigation.registerComponent('index', () => App);
 export default App;
