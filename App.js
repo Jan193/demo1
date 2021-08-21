@@ -7,12 +7,19 @@
  */
 
 import React from 'react';
-import {View, Text} from 'react-native';
+import {View, StyleSheet} from 'react-native';
+import Home from './views/home/index.js';
+
+const styles = StyleSheet.create({
+  app: {
+    minHeight: '100%',
+  },
+});
 
 const App = () => {
   return (
-    <View>
-      <Text>test</Text>
+    <View style={styles.app}>
+      <Home />
     </View>
   );
 };
