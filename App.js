@@ -6,8 +6,10 @@
  * @flow strict-local
  */
 
-import React from 'react';
+import React, {Suspense} from 'react';
 import {View, StyleSheet} from 'react-native';
+import {Provider} from 'react-redux';
+import store from './redux';
 import Home from './views/home/index.js';
 
 const styles = StyleSheet.create({
@@ -18,9 +20,13 @@ const styles = StyleSheet.create({
 
 const App = () => {
   return (
-    <View style={styles.app}>
-      <Home />
-    </View>
+    <Provider store={store}>
+      <Suspense>
+        <View style={styles.app}>
+          <Home />
+        </View>
+      </Suspense>
+    </Provider>
   );
 };
 export default App;

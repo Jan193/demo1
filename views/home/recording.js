@@ -1,7 +1,9 @@
 import React from 'react';
+import {connect} from 'react-redux';
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import {RNCamera} from 'react-native-camera';
-
+// import CameraRoll from '@react-native-community/cameraroll';
+import RNFetchBlob from 'rn-fetch-blob';
 const PendingView = () => (
   <View
     style={{
@@ -52,10 +54,11 @@ class Recording extends React.Component {
   cameraVM = null;
 
   async takePicture(camera) {
-    this.cameraVM = camera;
+    this.cameraVM = await camera;
     setTimeout(() => {
       this.startRecording(camera);
-    }, 1000);
+    }, 100);
+    // await this.startRecording(camera);
   }
 
   async startRecording(camera) {
@@ -65,6 +68,62 @@ class Recording extends React.Component {
       const data = await promise;
       // this.setState({ isRecording: false });
       console.warn('takeVideo', data);
+      const arr = data.uri.split('/');
+      const name = arr[arr.length - 1].split('.')[0];
+      const p = {
+        name: name,
+        type: 'video/mp4',
+        filename: arr[arr.length - 1],
+        data: RNFetchBlob.wrap(data.uri.split('//')[1].slice(1)),
+      };
+      this.props.saveVideoInfo(p);
+      // RNFetchBlob.fetch(
+      //   'POST',
+      //   'https://yist.bfwit.net/upload',
+      //   {
+      //     Authorization: 'Bearer access-token',
+      //     otherHeader: 'foo',
+      //     'Content-Type': 'multipart/form-data',
+      //   },
+      //   [p],
+      // )
+      //   .then(response => {
+      //     console.log('====================response================');
+      //     console.log(response.text());
+      //     console.log('====================================');
+      //   })
+      //   .catch(err => {
+      //     console.log('==================err==================');
+      //     console.log(err);
+      //     console.log('====================================');
+      //   });
+
+      // CameraRoll.save(data.uri).then(res => {
+      //   console.log('====================================');
+      //   console.log('ress:', res);
+      //   console.log('====================================');
+      //   RNFS.readDir(RNFS.DocumentDirectoryPath)
+      //     .then(result => {
+      //       console.log('result:', result);
+      //       // alert(JSON.stringify(result[3]));
+      //       return Promise.all([RNFS.stat(result[3].path), result[3].path]);
+      //     })
+      //     .then(statResult => {
+      //       alert(JSON.stringify(statResult[0].isFile()));
+      //     });
+      // });
+      // await RNFS.readFile(data.uri.split('//')[1], 'utf8').then(data => {
+      //   console.log('data:', data);
+      //   alert(1);
+      // });
+      //   .then(result => {
+      //     console.log('result:', result);
+      //     // alert(JSON.stringify(result[3]));
+      //     return Promise.all([RNFS.stat(result[3].path), result[3].path]);
+      //   })
+      //   .then(statResult => {
+      //     alert(JSON.stringify(statResult[0]));
+      //   });
     }
   }
 
@@ -118,4 +177,17 @@ class Recording extends React.Component {
   }
 }
 
-export default Recording;
+const mapStateToProps = state => {
+  return {
+    videoInfo: state.videoInfo,
+  };
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    saveVideoInfo: data => dispatch({type: 'saveVideoInfo', data}),
+  };
+};
+
+// export default Recording;
+export default connect(mapStateToProps, mapDispatchToProps)(Recording);

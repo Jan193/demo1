@@ -10,9 +10,16 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@react-native-community/cameraroll": "^4.0.4",
+    "axios": "^0.21.1",
+    "fbjs": "^3.0.0",
     "react": "17.0.2",
     "react-native": "0.65.1",
-    "react-native-camera": "^4.0.3"
+    "react-native-camera": "^4.0.3",
+    "react-native-fs": "^2.18.0",
+    "react-redux": "^7.2.4",
+    "redux": "^4.1.1",
+    "rn-fetch-blob": "^0.12.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
