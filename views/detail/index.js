@@ -131,8 +131,8 @@ class Home extends React.Component {
         this.setState({uploadLoading: false});
         console.log('====================response================');
         const responseData = response.json();
-        console.log(typeof responseData);
         if (responseData.code == 0) {
+          this.props.saveVideo(responseData);
           Alert.alert('上传完成');
         }
         console.log('====================================');
@@ -171,6 +171,7 @@ class Home extends React.Component {
   // 视频列表
   videoList() {
     Alert.alert('该功能开发中...');
+    console.log('videoList::', this.props.videoList);
   }
   // 显示文案
   showText() {
@@ -278,8 +279,15 @@ class Home extends React.Component {
 
 const mapStateToProps = state => {
   return {
+    videoList: state.videoList,
     videoInfo: state.videoInfo,
   };
 };
 
-export default connect(mapStateToProps)(Home);
+const mapDispatchToProps = dispatch => {
+  return {
+    saveVideo: data => dispatch({type: 'saveVideo', data}),
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Home);
