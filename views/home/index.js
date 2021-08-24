@@ -1,149 +1,91 @@
 import React from 'react';
-import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
-import Recording from './recording';
-import CameraRoll from '@react-native-community/cameraroll';
-import RNFetchBlob from 'rn-fetch-blob';
-import {connect} from 'react-redux';
-
-const styles = StyleSheet.create({
-  index: {
-    minHeight: '100%',
-  },
-  buttonBox: {
-    display: 'flex',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  button: {
-    width: '25%',
-    height: 100,
-    borderRightWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: '#ddd',
-  },
-  buttonText: {
-    marginTop: 'auto',
-    textAlign: 'center',
-  },
-});
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
+  StatusBar,
+} from 'react-native';
+import Loading from '../../components/Loading';
 
 class Home extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      isShowRecording: false,
+      list: [],
+      loading: true,
     };
   }
 
-  closeRecording() {
-    this.setState({isShowRecording: false});
-  }
-
-  showVideo() {
-    // RNFS.readDir(RNFS.CachesDirectoryPath)
-    //   .then(result => {
-    //     console.log('result:', result);
-    //     // alert(JSON.stringify(result[3]));
-    //     return Promise.all([RNFS.stat(result[3].path), result[3].path]);
-    //   })
-    //   .then(statResult => {
-    //     alert(JSON.stringify(statResult[0]));
-    //   });
-    // alert(RNFS.ExternalStorageDirectoryPath);
-
-    CameraRoll.getPhotos({
-      first: 1,
-      assetType: 'Videos',
-    }).then(res => {
-      const node = res.edges[0].node;
-      const arr = node.image.uri.split('/');
-      const name = arr[arr.length - 1].split('.')[0];
-      RNFetchBlob.fetch(
-        'POST',
-        'https://yist.bfwit.net/upload',
+  componentDidMount() {
+    setTimeout(() => {
+      this.setState(
         {
-          Authorization: 'Bearer access-token',
-          otherHeader: 'foo',
-          'Content-Type': 'multipart/form-data',
+          list: [
+            {name: '2021年第二次样片推荐', total: 5, recorded: 0, id: 1},
+            {name: '2021年第一次样片推荐', total: 2, recorded: 0, id: 2},
+            {name: '2021年第一次样片推荐', total: 2, recorded: 0, id: 3},
+            {name: '2021年第一次样片推荐', total: 2, recorded: 0, id: 4},
+            {name: '2021年第一次样片推荐', total: 2, recorded: 0, id: 5},
+            {name: '2021年第一次样片推荐', total: 2, recorded: 0, id: 6},
+            {name: '2021年第一次样片推荐', total: 2, recorded: 0, id: 7},
+            {name: '2021年第一次样片推荐', total: 2, recorded: 0, id: 8},
+            {name: '2021年第一次样片推荐', total: 2, recorded: 0, id: 9},
+            {name: '2021年第一次样片推荐', total: 2, recorded: 0, id: 10},
+            {name: '2021年第一次样片推荐', total: 2, recorded: 0, id: 11},
+            {name: '2021年第十次样片推荐', total: 2, recorded: 0, id: 12},
+          ],
         },
-        [
-          {
-            name: name,
-            type: node.type,
-            filename: arr[arr.length - 1],
-            data: RNFetchBlob.wrap(node.image.uri.split('//')[1].slice(1)),
-          },
-        ],
-      )
-        .then(response => {
-          console.log('====================response================');
-          console.log(response.text());
-          console.log('====================================');
-        })
-        .catch(err => {
-          console.log('==================err==================');
-          console.log(err);
-          console.log('====================================');
-        });
-    });
+        () => {
+          this.setState({loading: false});
+        },
+      );
+    }, 1000);
   }
 
-  uploadVideo() {
-    console.log('打印存储值：');
-    console.log(this.props.videoInfo);
+  toList(item) {
+    this.props.navigation.navigate('List', item);
   }
 
   render() {
+    const styles = StyleSheet.create({
+      home: {
+        minHeight: '100%',
+      },
+      box: {
+        backgroundColor: '#fff',
+        marginTop: 6,
+        padding: 10,
+      },
+      boxTitle: {
+        marginBottom: 5,
+        fontSize: 15,
+        color: '#666',
+      },
+    });
     return (
-      <View style={styles.index}>
-        <View style={styles.buttonBox}>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={this.startRecording.bind(this)}>
-            <Text style={styles.buttonText}>开始拍摄</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={this.startRecording.bind(this)}>
-            <Text style={styles.buttonText}>重新拍摄</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={this.startRecording.bind(this)}>
-            <Text style={styles.buttonText}>视频列表</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={this.uploadVideo.bind(this)}>
-            <Text style={styles.buttonText}>上传视频</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={this.startRecording.bind(this)}>
-            <Text style={styles.buttonText}>显示文案</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={this.showVideo.bind(this)}>
-            <Text style={styles.buttonText}>演示视频</Text>
-          </TouchableOpacity>
-        </View>
-        {this.state.isShowRecording && (
-          <Recording closeRecording={this.closeRecording.bind(this)} />
-        )}
+      <View style={styles.home}>
+        <StatusBar backgroundColor="white" barStyle="dark-content" />
+        {this.state.loading && <Loading />}
+        <FlatList
+          data={this.state.list}
+          renderItem={data => {
+            return (
+              <TouchableOpacity
+                style={styles.box}
+                onPress={this.toList.bind(this, data.item)}>
+                <Text style={styles.boxTitle}>{data.item.name}</Text>
+                <Text>
+                  总数量：{data.item.total}，已录制：{data.item.recorded}
+                </Text>
+              </TouchableOpacity>
+            );
+          }}
+        />
       </View>
     );
   }
-
-  startRecording() {
-    this.setState({isShowRecording: true});
-  }
 }
 
-const mapStateToProps = state => {
-  return {
-    videoInfo: state.videoInfo,
-  };
-};
-
-export default connect(mapStateToProps)(Home);
+export default Home;
