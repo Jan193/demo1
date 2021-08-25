@@ -16,6 +16,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import Home from './views/home/index.js';
 import List from './views/list';
 import Detail from './views/detail';
+import VideoPlayer from './views/videoPlay/VideoPlayer';
 
 const RootStack = createNativeStackNavigator();
 
@@ -52,6 +53,11 @@ const App = () => {
             name="Detail"
             component={Detail}
             options={{...headerOptions}}
+          />
+          <RootStack.Screen
+            name="VideoPlayer"
+            component={VideoPlayer}
+            options={{...headerOptions, headerShown: false}}
           />
         </RootStack.Navigator>
       </NavigationContainer>

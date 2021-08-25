@@ -27,6 +27,7 @@ const styles = StyleSheet.create({
   title: {
     color: '#daa520',
     marginRight: 10,
+    fontSize: 16,
   },
   buttonBox: {
     width: 50,
@@ -100,36 +101,6 @@ const List = ({navigation, route}) => {
       content:
         '十六岁就得高血压，实际上是一个比较少见的情况，第一查一下四肢的血压。',
     },
-    {
-      id: 6,
-      name: '高血压正常，低血压怎么办？',
-      content:
-        '十六岁就得高血压，实际上是一个比较少见的情况，第一查一下四肢的血压。',
-    },
-    {
-      id: 7,
-      name: '高血压正常，低血压怎么办？',
-      content:
-        '十六岁就得高血压，实际上是一个比较少见的情况，第一查一下四肢的血压。',
-    },
-    {
-      id: 8,
-      name: '高血压正常，低血压怎么办？',
-      content:
-        '十六岁就得高血压，实际上是一个比较少见的情况，第一查一下四肢的血压。',
-    },
-    {
-      id: 9,
-      name: '高血压正常，低血压怎么办？',
-      content:
-        '十六岁就得高血压，实际上是一个比较少见的情况，第一查一下四肢的血压。',
-    },
-    {
-      id: 10,
-      name: '高血压正常，低血压怎么办？？',
-      content:
-        '十六岁就得高血压，实际上是一个比较少见的情况，第一查一下四肢的血压。',
-    },
   ];
 
   const toDetail = data => {
@@ -164,7 +135,7 @@ const List = ({navigation, route}) => {
       <View>
         <View style={styles.top}>
           <Text style={styles.title}>
-            {params.name}({params.recorded}/{params.total})
+            {params.title}({params.complete_num}/{params.selected_num})
           </Text>
           <TouchableOpacity style={styles.button}>
             <Text style={styles.buttonText}>完成</Text>

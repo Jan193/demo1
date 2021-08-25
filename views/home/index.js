@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React from 'react';
 import {
   View,
@@ -6,8 +7,10 @@ import {
   StyleSheet,
   TouchableOpacity,
   StatusBar,
+  Alert,
 } from 'react-native';
 import Loading from '../../components/Loading';
+import {connect} from 'react-redux';
 
 class Home extends React.Component {
   constructor(props) {
@@ -19,29 +22,52 @@ class Home extends React.Component {
   }
 
   componentDidMount() {
-    setTimeout(() => {
-      this.setState(
-        {
-          list: [
-            {name: '2021年第二次样片推荐', total: 5, recorded: 0, id: 1},
-            {name: '2021年第一次样片推荐', total: 2, recorded: 0, id: 2},
-            {name: '2021年第一次样片推荐', total: 2, recorded: 0, id: 3},
-            {name: '2021年第一次样片推荐', total: 2, recorded: 0, id: 4},
-            {name: '2021年第一次样片推荐', total: 2, recorded: 0, id: 5},
-            {name: '2021年第一次样片推荐', total: 2, recorded: 0, id: 6},
-            {name: '2021年第一次样片推荐', total: 2, recorded: 0, id: 7},
-            {name: '2021年第一次样片推荐', total: 2, recorded: 0, id: 8},
-            {name: '2021年第一次样片推荐', total: 2, recorded: 0, id: 9},
-            {name: '2021年第一次样片推荐', total: 2, recorded: 0, id: 10},
-            {name: '2021年第一次样片推荐', total: 2, recorded: 0, id: 11},
-            {name: '2021年第十次样片推荐', total: 2, recorded: 0, id: 12},
-          ],
+    this.getToken();
+  }
+
+  getToken() {
+    axios
+      .get('https://yist.bfwit.net/JAI/wx/user/platUserLogin', {
+        params: {
+          id: '184113',
         },
-        () => {
+      })
+      .then(res => {
+        if (res.data.code === 0) {
+          this.props.saveToken(res.data.token);
+          this.getIndexList(res.data.token);
+        } else {
+          Alert.alert('提示', res.data.msg);
           this.setState({loading: false});
+        }
+      })
+      .catch(err => {
+        Alert.alert('错误提示', err);
+        this.setState({loading: false});
+      });
+  }
+
+  getIndexList(token) {
+    console.log('token::', token);
+    axios
+      .get('https://yist.bfwit.net/JAI/wx/record/getRecTaskList', {
+        headers: {
+          token: token,
         },
-      );
-    }, 1000);
+      })
+      .then(res => {
+        this.setState({loading: false});
+        if (res.data.code === 0) {
+          console.log(res.data.data);
+          this.setState({list: res.data.data});
+        } else {
+          Alert.alert('提示', res.data.msg);
+        }
+      })
+      .catch(err => {
+        Alert.alert('错误提示', err);
+        this.setState({loading: false});
+      });
   }
 
   toList(item) {
@@ -75,9 +101,10 @@ class Home extends React.Component {
               <TouchableOpacity
                 style={styles.box}
                 onPress={this.toList.bind(this, data.item)}>
-                <Text style={styles.boxTitle}>{data.item.name}</Text>
+                <Text style={styles.boxTitle}>{data.item.title}</Text>
                 <Text>
-                  总数量：{data.item.total}，已录制：{data.item.recorded}
+                  总数量：{data.item.selected_num}，已录制：
+                  {data.item.complete_num}
                 </Text>
               </TouchableOpacity>
             );
@@ -88,4 +115,16 @@ class Home extends React.Component {
   }
 }
 
-export default Home;
+const mapStateToProps = state => {
+  return {
+    token: state.token,
+  };
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    saveToken: data => dispatch({type: 'saveToken', data}),
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Home);

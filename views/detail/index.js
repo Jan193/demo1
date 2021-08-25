@@ -96,6 +96,7 @@ class Home extends React.Component {
       isShowRecording: false,
       uploadLoading: false,
       modalVisible: false,
+      playVideo: false,
     };
   }
 
@@ -111,11 +112,22 @@ class Home extends React.Component {
     this.setState({isShowRecording: false});
   }
 
-  showVideo() {}
+  showVideo() {
+    console.log(this.props.videoInfo);
+    const videoInfo = this.props.videoInfo || {};
+    this.props.navigation.navigate('VideoPlayer', {
+      // video: 'http://yist.bfwit.net/upfile/20210824/img2060.mp4',
+      video: videoInfo._local,
+    });
+  }
   // 上传视频
   uploadVideo() {
-    console.log('打印存储值：');
-    console.log(this.props.videoInfo);
+    const param = JSON.parse(JSON.stringify(this.props.videoInfo));
+    if (!param || JSON.stringify(param) === '{}') {
+      return Alert.alert('缺少参数', param);
+    }
+    delete param._local;
+    console.log('param::', param);
     this.setState({uploadLoading: true});
     RNFetchBlob.fetch(
       'POST',
@@ -125,7 +137,7 @@ class Home extends React.Component {
         otherHeader: 'foo',
         'Content-Type': 'multipart/form-data',
       },
-      [this.props.videoInfo],
+      [param],
     )
       .then(response => {
         this.setState({uploadLoading: false});
@@ -175,7 +187,7 @@ class Home extends React.Component {
   }
   // 显示文案
   showText() {
-    alert('该功能开发中...');
+    Alert.alert('提示', '该功能开发中...', [{text: '确定'}]);
   }
 
   prevData() {}

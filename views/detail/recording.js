@@ -67,7 +67,7 @@ class Recording extends React.Component {
       // this.setState({ isRecording: true });
       const data = await promise;
       // this.setState({ isRecording: false });
-      console.warn('takeVideo', data);
+      // console.warn('takeVideo', data);
       const arr = data.uri.split('/');
       const name = arr[arr.length - 1].split('.')[0];
       const p = {
@@ -75,6 +75,7 @@ class Recording extends React.Component {
         type: 'video/mp4',
         filename: arr[arr.length - 1],
         data: RNFetchBlob.wrap(data.uri.split('//')[1].slice(1)),
+        _local: data.uri,
       };
       this.props.saveVideoInfo(p);
       // RNFetchBlob.fetch(
