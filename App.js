@@ -16,7 +16,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import Home from './views/home/index.js';
 import List from './views/list';
 import Detail from './views/detail';
-import VideoPlayer from './views/videoPlay/VideoPlayer';
+import VideoPlayer from './views/videoPlay/video';
 
 const RootStack = createNativeStackNavigator();
 

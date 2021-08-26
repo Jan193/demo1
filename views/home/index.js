@@ -1,4 +1,3 @@
-import axios from 'axios';
 import React from 'react';
 import {
   View,
@@ -11,6 +10,7 @@ import {
 } from 'react-native';
 import Loading from '../../components/Loading';
 import {connect} from 'react-redux';
+import http from '../../http';
 
 class Home extends React.Component {
   constructor(props) {
@@ -26,39 +26,17 @@ class Home extends React.Component {
   }
 
   getToken() {
-    axios
-      .get('https://yist.bfwit.net/JAI/wx/user/platUserLogin', {
-        params: {
-          id: '184113',
-        },
-      })
-      .then(res => {
-        if (res.data.code === 0) {
-          this.props.saveToken(res.data.token);
-          this.getIndexList(res.data.token);
-        } else {
-          Alert.alert('提示', res.data.msg);
-          this.setState({loading: false});
-        }
-      })
-      .catch(err => {
-        Alert.alert('错误提示', err);
-        this.setState({loading: false});
-      });
+    http.getToken().then(() => {
+      this.getIndexList();
+    });
   }
 
   getIndexList(token) {
-    console.log('token::', token);
-    axios
-      .get('https://yist.bfwit.net/JAI/wx/record/getRecTaskList', {
-        headers: {
-          token: token,
-        },
-      })
+    http
+      .getRecTaskList(token)
       .then(res => {
         this.setState({loading: false});
         if (res.data.code === 0) {
-          console.log(res.data.data);
           this.setState({list: res.data.data});
         } else {
           Alert.alert('提示', res.data.msg);

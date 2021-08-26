@@ -13,6 +13,8 @@ import Recording from './recording';
 import RNFetchBlob from 'rn-fetch-blob';
 import {connect} from 'react-redux';
 import UploadLoading from '../../components/uploadLoading';
+import http from '../../http';
+import VideoList from './videoList';
 
 const padding = 10;
 
@@ -51,11 +53,10 @@ const styles = StyleSheet.create({
     padding,
   },
   detailTitle: {
-    marginBottom: padding,
-    fontSize: 15,
+    fontSize: 16,
   },
   detailContent: {
-    fontSize: 12,
+    fontSize: 14,
   },
 
   bottom: {
@@ -97,12 +98,11 @@ class Home extends React.Component {
       uploadLoading: false,
       modalVisible: false,
       playVideo: false,
+      showVideoList: false,
     };
   }
 
-  componentDidMount() {
-    console.log('props: ', this.props);
-  }
+  componentDidMount() {}
 
   startRecording() {
     this.setState({isShowRecording: true});
@@ -113,7 +113,7 @@ class Home extends React.Component {
   }
 
   showVideo() {
-    console.log(this.props.videoInfo);
+    // console.log(this.props.videoInfo);
     const videoInfo = this.props.videoInfo || {};
     this.props.navigation.navigate('VideoPlayer', {
       // video: 'http://yist.bfwit.net/upfile/20210824/img2060.mp4',
@@ -127,7 +127,6 @@ class Home extends React.Component {
       return Alert.alert('缺少参数', param);
     }
     delete param._local;
-    console.log('param::', param);
     this.setState({uploadLoading: true});
     RNFetchBlob.fetch(
       'POST',
@@ -141,18 +140,14 @@ class Home extends React.Component {
     )
       .then(response => {
         this.setState({uploadLoading: false});
-        console.log('====================response================');
         const responseData = response.json();
-        if (responseData.code == 0) {
+        if (responseData.code === 0) {
           this.props.saveVideo(responseData);
-          Alert.alert('上传完成');
+          Alert.alert('提示', '上传完成');
         }
-        console.log('====================================');
       })
       .catch(err => {
-        console.log('==================err==================');
-        console.log(err);
-        console.log('====================================');
+        Alert.alert('提示', err);
         this.setState({uploadLoading: false});
       });
 
@@ -178,12 +173,43 @@ class Home extends React.Component {
   };
   // 重新拍摄
   resetRecording() {
-    this.setState({isShowRecording: true});
+    Alert.alert('提示', '是否确定要清空视频列表？', [
+      {
+        text: '否',
+        type: 'cancel',
+        onPress: () => {},
+      },
+      {
+        text: '是',
+        onPress: () => {
+          console.log('点击了确定');
+        },
+      },
+    ]);
   }
+  isShowVideoList = (value = false) => {
+    this.setState({showVideoList: value});
+  };
   // 视频列表
   videoList() {
-    Alert.alert('该功能开发中...');
-    console.log('videoList::', this.props.videoList);
+    this.isShowVideoList(true);
+    return;
+    // console.log('videoList::', this.props.videoList);
+    const {fk_works_id} = this.props.route.params;
+    http
+      .getRecTaskVideoList({fk_works_id})
+      .then(res => {
+        // this.setState({loading: false});
+        if (res.data.code === 0) {
+          console.log('result::', res.data.data);
+        } else {
+          Alert.alert('提示', res.data.msg);
+        }
+      })
+      .catch(err => {
+        Alert.alert('错误提示', err);
+        // this.setState({loading: false});
+      });
   }
   // 显示文案
   showText() {
@@ -266,7 +292,9 @@ class Home extends React.Component {
           </TouchableOpacity>
         </View>
         <View style={styles.detail}>
-          <Text style={styles.detailTitle}>{params.name}</Text>
+          <Text style={styles.detailTitle}>
+            {params._index}. {params.title}
+          </Text>
           <Text style={styles.detailContent}>{params.content}</Text>
         </View>
         <View style={styles.bottom}>
@@ -283,6 +311,9 @@ class Home extends React.Component {
         </View>
         {this.state.isShowRecording && (
           <Recording closeRecording={this.closeRecording.bind(this)} />
+        )}
+        {this.state.showVideoList && (
+          <VideoList isShowVideoList={this.isShowVideoList} params={params} />
         )}
       </View>
     );

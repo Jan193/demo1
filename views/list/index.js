@@ -4,14 +4,16 @@ import {
   View,
   StyleSheet,
   TouchableOpacity,
-  // FlatList,
+  Alert,
   VirtualizedList,
   SafeAreaView,
   StatusBar,
 } from 'react-native';
+import http from '../../http';
+import Loading from '../../components/Loading';
 
 const padding = 10;
-const statusBarHeight = parseInt(StatusBar.currentHeight) + 50;
+const statusBarHeight = parseInt(StatusBar.currentHeight, 10) + 50;
 
 const styles = StyleSheet.create({
   page: {
@@ -68,110 +70,94 @@ const styles = StyleSheet.create({
   },
 });
 
-const List = ({navigation, route}) => {
-  const {params} = route;
-  const list = [
-    {
-      id: 1,
-      name: '16岁血压高，该怎么查？',
-      content:
-        '十六岁就得高血压，实际上是一个比较少见的情况，第一查一下四肢的血压。',
-    },
-    {
-      id: 2,
-      name: '高血压正常，低血压怎么办？',
-      content:
-        '十六岁就得高血压，实际上是一个比较少见的情况，第一查一下四肢的血压。',
-    },
-    {
-      id: 3,
-      name: '高血压正常，低血压怎么办？',
-      content:
-        '十六岁就得高血压，实际上是一个比较少见的情况，第一查一下四肢的血压。',
-    },
-    {
-      id: 4,
-      name: '高血压正常，低血压怎么办？',
-      content:
-        '十六岁就得高血压，实际上是一个比较少见的情况，第一查一下四肢的血压。',
-    },
-    {
-      id: 5,
-      name: '高血压正常，低血压怎么办？',
-      content:
-        '十六岁就得高血压，实际上是一个比较少见的情况，第一查一下四肢的血压。',
-    },
-  ];
+class List extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      loading: true,
+      list: [],
+    };
+  }
+  componentDidMount() {
+    this.getIndexList();
+  }
 
-  const toDetail = data => {
-    navigation.navigate('Detail', data);
+  getIndexList = () => {
+    const {params} = this.props.route;
+    http
+      .getRecTaskSampleList({fk_rec_id: params.id})
+      .then(res => {
+        this.setState({loading: false});
+        if (res.data.code === 0) {
+          this.setState({list: res.data.data});
+        } else {
+          Alert.alert('提示', res.data.msg);
+        }
+      })
+      .catch(err => {
+        Alert.alert('错误提示', err);
+        this.setState({loading: false});
+      });
   };
 
-  const getItem = (data, index) => {
+  toDetail = (data, index) => {
+    this.props.navigation.navigate('Detail', {...data, _index: index + 1});
+  };
+
+  getItem = (data, index) => {
     return {
       ...data,
     };
   };
 
-  const renderItem = data => {
+  renderItem = data => {
     const {index} = data;
     const item = data.item[index];
     return (
-      <TouchableOpacity style={styles.box} onPress={() => toDetail(item)}>
+      <TouchableOpacity
+        style={styles.box}
+        onPress={() => this.toDetail(item, index)}>
         <Text style={styles.boxTitle}>
-          {index + 1}. {item.name}
+          {index + 1}. {item.title}
         </Text>
         <Text style={styles.content}>{item.content}</Text>
       </TouchableOpacity>
     );
   };
 
-  const keyExtractor = (data, index) => {
-    console.log('index::', data[index]);
+  keyExtractor = (data, index) => {
     return index;
   };
-  return (
-    <SafeAreaView style={styles.page}>
-      <View>
-        <View style={styles.top}>
-          <Text style={styles.title}>
-            {params.title}({params.complete_num}/{params.selected_num})
-          </Text>
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>完成</Text>
-          </TouchableOpacity>
+
+  render() {
+    const {params} = this.props.route;
+    return (
+      <SafeAreaView style={styles.page}>
+        <View>
+          {this.state.loading && <Loading />}
+          <View style={styles.top}>
+            <Text style={styles.title}>
+              {params.title}({params.complete_num}/{params.selected_num})
+            </Text>
+            <TouchableOpacity style={styles.button}>
+              <Text style={styles.buttonText}>完成</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.main}>
+            <VirtualizedList
+              style={styles.listContainer}
+              data={this.state.list}
+              initialNumToRender={5}
+              renderItem={this.renderItem}
+              keyExtractor={this.keyExtractor}
+              getItemCount={() => this.state.list.length}
+              getItem={this.getItem}
+            />
+          </View>
         </View>
-        <View style={styles.main}>
-          {/* <FlatList
-            style={styles.listContainer}
-            data={list}
-            renderItem={data => {
-              const {item, index} = data;
-              return (
-                <TouchableOpacity
-                  style={styles.box}
-                  onPress={() => toDetail(item)}>
-                  <Text style={styles.boxTitle}>
-                    {index + 1}. {item.name}
-                  </Text>
-                  <Text style={styles.content}>{item.content}</Text>
-                </TouchableOpacity>
-              );
-            }}
-          /> */}
-          <VirtualizedList
-            style={styles.listContainer}
-            data={list}
-            initialNumToRender={5}
-            renderItem={renderItem}
-            keyExtractor={keyExtractor}
-            getItemCount={() => list.length}
-            getItem={getItem}
-          />
-        </View>
-      </View>
-    </SafeAreaView>
-  );
-};
+      </SafeAreaView>
+    );
+  }
+}
 
 export default List;
