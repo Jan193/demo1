@@ -63,7 +63,7 @@ class Recording extends React.Component {
     this.cameraVM = await camera;
     setTimeout(() => {
       this.startRecording(camera);
-    }, 100);
+    }, 200);
   }
 
   async startRecording(camera) {
@@ -80,9 +80,8 @@ class Recording extends React.Component {
         _local: data.uri,
         fk_works_id: this.props.currentData.fk_works_id,
       };
-      console.log('打印:', p);
-      const res = this.props.saveVideo(p);
-      console.log('res:', res);
+      this.props.saveVideo(p);
+
       // RNFetchBlob.fetch(
       //   'POST',
       //   'https://yist.bfwit.net/upload',
@@ -94,24 +93,15 @@ class Recording extends React.Component {
       //   [p],
       // )
       //   .then(response => {
-      //     console.log('====================response================');
       //     console.log(response.text());
-      //     console.log('====================================');
       //   })
       //   .catch(err => {
-      //     console.log('==================err==================');
       //     console.log(err);
-      //     console.log('====================================');
       //   });
 
       // CameraRoll.save(data.uri).then(res => {
-      //   console.log('====================================');
-      //   console.log('ress:', res);
-      //   console.log('====================================');
       //   RNFS.readDir(RNFS.DocumentDirectoryPath)
       //     .then(result => {
-      //       console.log('result:', result);
-      //       // alert(JSON.stringify(result[3]));
       //       return Promise.all([RNFS.stat(result[3].path), result[3].path]);
       //     })
       //     .then(statResult => {
@@ -119,12 +109,9 @@ class Recording extends React.Component {
       //     });
       // });
       // await RNFS.readFile(data.uri.split('//')[1], 'utf8').then(data => {
-      //   console.log('data:', data);
       //   alert(1);
       // });
       //   .then(result => {
-      //     console.log('result:', result);
-      //     // alert(JSON.stringify(result[3]));
       //     return Promise.all([RNFS.stat(result[3].path), result[3].path]);
       //   })
       //   .then(statResult => {
@@ -137,6 +124,30 @@ class Recording extends React.Component {
     this.cameraVM.stopRecording();
     this.props.closeRecording();
   }
+
+  test = ({camera, status, recordAudioPermissionStatus}) => {
+    // console.log('status:', status);
+    if (status !== 'READY') {
+      return <PendingView />;
+    } else {
+      // alert('ok');
+    }
+    this.takePicture(camera);
+    return (
+      <View
+        style={{
+          flex: 0,
+          flexDirection: 'row',
+          justifyContent: 'center',
+        }}>
+        <TouchableOpacity
+          onPress={this.stopRecording.bind(this)}
+          style={styles.capture}>
+          <Text style={{fontSize: 14}}>结束</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   render() {
     return (
@@ -157,26 +168,7 @@ class Recording extends React.Component {
             buttonPositive: 'Ok',
             buttonNegative: 'Cancel',
           }}>
-          {({camera, status, recordAudioPermissionStatus}) => {
-            if (status !== 'READY') {
-              return <PendingView />;
-            }
-            this.takePicture(camera);
-            return (
-              <View
-                style={{
-                  flex: 0,
-                  flexDirection: 'row',
-                  justifyContent: 'center',
-                }}>
-                <TouchableOpacity
-                  onPress={this.stopRecording.bind(this)}
-                  style={styles.capture}>
-                  <Text style={{fontSize: 14}}>结束</Text>
-                </TouchableOpacity>
-              </View>
-            );
-          }}
+          {this.test()}
         </RNCamera>
       </View>
     );

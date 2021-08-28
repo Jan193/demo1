@@ -44,7 +44,6 @@ class VideoList extends React.Component {
         this.setState({loading: false});
         if (res.data.code === 0) {
           this.setState({lineVideos: res.data.data});
-          console.log(res.data.data);
         } else {
           Alert.alert('提示', res.data.msg);
         }

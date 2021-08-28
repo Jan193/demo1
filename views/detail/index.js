@@ -8,11 +8,15 @@ import {
   Modal,
   Alert,
   ToastAndroid,
+  DrawerLayoutAndroid,
+  Button,
 } from 'react-native';
 import Recording from './recording';
 // import CameraRoll from '@react-native-community/cameraroll';
 import RNFetchBlob from 'rn-fetch-blob';
 import {connect} from 'react-redux';
+import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+
 import UploadLoading from '../../components/uploadLoading';
 import http from '../../http';
 // import http from '../../http';
@@ -97,6 +101,28 @@ const styles = StyleSheet.create({
     marginTop: 'auto',
     // marginBottom: 'auto',
   },
+
+  showCameraSelect: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    width: '100%',
+    height: '100%',
+  },
+  showCameraSelectContainer: {
+    width: 200,
+    height: 100,
+    backgroundColor: '#fff',
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  cameraSelectText: {
+    textAlign: 'center',
+    lineHeight: 50,
+    color: '#1989fa',
+  },
 });
 
 class Home extends React.Component {
@@ -110,6 +136,7 @@ class Home extends React.Component {
       showVideoList: false,
       isFlip: false,
       currentData: {},
+      showCameraSelect: false,
     };
   }
 
@@ -121,9 +148,67 @@ class Home extends React.Component {
   }
 
   startRecording() {
-    this.setState({isShowRecording: true});
+    // this.setState({isShowRecording: true});
     // this.props.navigation.navigate('Recording', this.state.currentData);
+    /* launchCamera(
+      {
+        mediaType: 'video',
+        videoQuality: 'high',
+        cameraType: 'back',
+        selectionLimit: 0,
+      },
+      response => {
+        console.log('结果:', response);
+      },
+    ); */
+
+    this.setState({showCameraSelect: true});
   }
+  album = () => {
+    this.setState({showCameraSelect: false});
+    launchImageLibrary(
+      {
+        mediaType: 'video',
+        videoQuality: 'high',
+        cameraType: 'back',
+        selectionLimit: 0,
+      },
+      response => {
+        console.log('response:', response);
+        const list = response.assets;
+        list.forEach(item => {
+          const p = {
+            // name: name,
+            type: 'video/mp4',
+            filename: item.fileName,
+            data: RNFetchBlob.wrap(item.uri.split('//')[1]),
+            _local: item.uri,
+            fk_works_id: this.state.currentData.fk_works_id,
+          };
+          this.props.saveVideo(p);
+        });
+
+        // this.props.navigation.navigate('VideoPlayer', {
+        //   video: response.assets[0].uri,
+        // });
+      },
+    );
+  };
+  shot = () => {
+    this.setState({showCameraSelect: false});
+    this.props.navigation.navigate('Recording', this.state.currentData);
+    // launchCamera(
+    //   {
+    //     mediaType: 'video',
+    //     videoQuality: 'high',
+    //     cameraType: 'back',
+    //     selectionLimit: 0,
+    //   },
+    //   response => {
+    //     console.log('结果:', response);
+    //   },
+    // );
+  };
 
   closeRecording() {
     this.setState({isShowRecording: false});
@@ -175,6 +260,7 @@ class Home extends React.Component {
         [param],
       )
         .then(response => {
+          console.log('上传成功:', response.data);
           this.setState({uploadLoading: false});
           const responseData = response.json();
           if (responseData.code === 0) {
@@ -333,6 +419,25 @@ class Home extends React.Component {
             this.setModalVisible(!modalVisible);
           }}
         />
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={this.state.showCameraSelect}
+          onRequestClose={() => {
+            Alert.alert('Modal has been closed.');
+            // this.setModalVisible(!this.state.showCameraSelect);
+          }}>
+          <View style={styles.showCameraSelect}>
+            <View style={styles.showCameraSelectContainer}>
+              <TouchableOpacity onPress={() => this.album()}>
+                <Text style={styles.cameraSelectText}>从相册选择</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => this.shot()}>
+                <Text style={styles.cameraSelectText}>拍摄</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
         <View style={styles.buttonBox}>
           <TouchableOpacity
             style={styles.button}
@@ -439,7 +544,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    // saveVideo: data => dispatch({type: 'saveVideo', data}),
+    saveVideo: data => dispatch({type: 'saveVideo', data}),
     clearVideo: data => dispatch({type: 'clearVideo', data}),
   };
 };

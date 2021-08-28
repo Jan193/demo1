@@ -65,7 +65,7 @@ export default class VideoPlayer extends React.Component {
             this.video = ref;
           }}
           // source={{uri: 'http://yist.bfwit.net/upfile/20210824/img2060.mp4', type: 'mpd'}} //设置视频源
-          source={{uri: videoURI, type: 'mpd'}} //设置视频源
+          source={{uri: videoURI}} //设置视频源
           style={styles.fullScreen} //组件样式
           rate={this.state.rate} //播放速率
           paused={this.state.paused} //暂停

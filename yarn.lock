@@ -5796,6 +5796,11 @@ react-native-fs@^2.18.0:
     base-64 "^0.1.0"
     utf8 "^3.0.0"
 
+react-native-image-picker@^4.0.6:
+  version "4.0.6"
+  resolved "https://registry.nlark.com/react-native-image-picker/download/react-native-image-picker-4.0.6.tgz#0dfa5bb83bcf6ff58635ebb9201a185c2271e8cc"
+  integrity sha1-DfpbuDvPb/WGNeu5IBoYXCJx6Mw=
+
 react-native-safe-area-context@^3.3.0:
   version "3.3.0"
   resolved "https://registry.nlark.com/react-native-safe-area-context/download/react-native-safe-area-context-3.3.0.tgz?cache=0&sync_timestamp=1628216155380&other_urls=https%3A%2F%2Fregistry.nlark.com%2Freact-native-safe-area-context%2Fdownload%2Freact-native-safe-area-context-3.3.0.tgz#6e0b45baa031589ec9c54f8359ace166a36aa5e5"
