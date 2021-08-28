@@ -1,6 +1,6 @@
 import React from 'react';
 import Video from 'react-native-video';
-import {StyleSheet, View} from 'react-native';
+import {StyleSheet, ToastAndroid, View} from 'react-native';
 
 const styles = StyleSheet.create({
   page: {
@@ -31,35 +31,32 @@ export default class VideoPlayer extends React.Component {
       duration: 0.0,
       currentTime: 0.0,
       paused: true,
-      video: '',
     };
   }
 
-  componentDidMount() {
-    console.log('params:', this.props.route.params);
-    this.setState({video: this.props.route.params.video});
-  }
+  componentDidMount() {}
   video = null;
 
   onLoad = () => {
-    console.log('onLoad');
+    // console.log('onLoad');
     this.video.seek(-1);
   };
   onProgress = () => {
-    console.log('onProgress');
+    // console.log('onProgress');
   };
   onEnd = () => {
-    console.log('onEnd');
+    // console.log('onEnd');
   };
   onAudioBecomingNoisy = () => {
-    console.log('onAudioBecomingNoisy');
+    // console.log('onAudioBecomingNoisy');
   };
   onAudioFocusChanged = () => {
-    console.log('onAudioFocusChanged');
+    // console.log('onAudioFocusChanged');
   };
 
   render() {
-    const {video} = this.props.route.params;
+    // const {videoURI} = this.props.route.params;
+    const videoURI = this.props.route.params.video;
     return (
       <View style={styles.page}>
         <Video
@@ -68,7 +65,7 @@ export default class VideoPlayer extends React.Component {
             this.video = ref;
           }}
           // source={{uri: 'http://yist.bfwit.net/upfile/20210824/img2060.mp4', type: 'mpd'}} //设置视频源
-          source={{uri: video, type: 'mpd'}} //设置视频源
+          source={{uri: videoURI, type: 'mpd'}} //设置视频源
           style={styles.fullScreen} //组件样式
           rate={this.state.rate} //播放速率
           paused={this.state.paused} //暂停

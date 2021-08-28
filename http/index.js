@@ -11,8 +11,14 @@ const axios = Axios.create({
 
 axios.interceptors.request.use(
   config => {
-    const {token} = store.getState();
-    config.headers.token = token;
+    try {
+      const {token} = store.getState();
+      if (token) {
+        config.headers.token = token;
+      }
+    } catch (err) {
+      console.log('err->', err);
+    }
     return config;
   },
   error => {
@@ -21,7 +27,7 @@ axios.interceptors.request.use(
 );
 
 axios.interceptors.response.use(
-  async response => {
+  response => {
     return response;
   },
   error => {
@@ -66,10 +72,23 @@ export const getRecTaskVideoList = data =>
     params: data,
   });
 
+// 录制视频提交
+export const addRecTaskVideo = data =>
+  axios.post('/record/addRecTaskVideo.json', data);
+// 更新录制状态
+export const updateRecTaskStatus = data =>
+  axios.post('/record/updateRecTaskStatus.json', data);
+// 更新任务列表状态
+export const updateRecBatchStatus = data =>
+  axios.post('/wx/recommend/updateRecBatchStatus.json', data);
+
 export default {
   getToken,
   platUserLogin,
   getRecTaskList,
   getRecTaskSampleList,
   getRecTaskVideoList,
+  addRecTaskVideo,
+  updateRecTaskStatus,
+  updateRecBatchStatus,
 };

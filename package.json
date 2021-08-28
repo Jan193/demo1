@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@react-native-community/cameraroll": "^4.0.4",
+    "@react-navigation/core": "^6.0.1",
     "@react-navigation/native": "^6.0.2",
     "@react-navigation/native-stack": "^6.1.0",
     "axios": "^0.21.1",

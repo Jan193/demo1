@@ -4,6 +4,8 @@ import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import {RNCamera} from 'react-native-camera';
 // import CameraRoll from '@react-native-community/cameraroll';
 import RNFetchBlob from 'rn-fetch-blob';
+import {useIsFocused} from '@react-navigation/core';
+
 const PendingView = () => (
   <View
     style={{
@@ -49,21 +51,37 @@ const styles = StyleSheet.create({
 class Recording extends React.Component {
   constructor(props) {
     super(props);
+    this.state = {
+      currentData: {},
+      cameraVM: null,
+    };
   }
 
-  componentDidMount() {}
+  camera = null;
 
-  componentWillUnmount() {
-    // this.cameraVM.stopRecording();
+  componentDidMount() {
+    this.setState({
+      currentData: this.props.route.params,
+    });
+    try {
+      this.startRecording(this.camera);
+    } catch (e) {
+      console.log('============catch==========');
+      console.log(e);
+    }
   }
-
-  cameraVM = null;
 
   async takePicture(camera) {
-    this.cameraVM = await camera;
-    setTimeout(() => {
-      this.startRecording(camera);
-    }, 100);
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    // this.setState({cameraVM: camera}, () => {
+    //   setTimeout(() => {
+    //     this.startRecording(camera);
+    //   }, 100);
+    // });
+    // this.cameraVM = await camera;
+    // setTimeout(() => {
+    //   this.startRecording(camera);
+    // }, 100);
   }
 
   async startRecording(camera) {
@@ -78,11 +96,10 @@ class Recording extends React.Component {
         filename: arr[arr.length - 1],
         data: RNFetchBlob.wrap(data.uri.split('//')[1].slice(1)),
         _local: data.uri,
-        fk_works_id: this.props.currentData.fk_works_id,
+        fk_works_id: this.state.currentData.fk_works_id,
       };
-      console.log('打印:', p);
-      const res = this.props.saveVideo(p);
-      console.log('res:', res);
+      console.log('录制结束：', p);
+      this.props.saveVideo(p);
       // RNFetchBlob.fetch(
       //   'POST',
       //   'https://yist.bfwit.net/upload',
@@ -133,15 +150,19 @@ class Recording extends React.Component {
     }
   }
 
-  stopRecording() {
-    this.cameraVM.stopRecording();
-    this.props.closeRecording();
+  async stopRecording() {
+    await this.camera.stopRecording();
+    // this.props.closeRecording();
+    await this.props.navigation.goBack();
   }
 
   render() {
     return (
       <View style={styles.page}>
         <RNCamera
+          ref={ref => {
+            this.camera = ref;
+          }}
           style={styles.preview}
           type={RNCamera.Constants.Type.back}
           flashMode={RNCamera.Constants.FlashMode.on}
@@ -160,8 +181,9 @@ class Recording extends React.Component {
           {({camera, status, recordAudioPermissionStatus}) => {
             if (status !== 'READY') {
               return <PendingView />;
+            } else {
+              this.takePicture(camera);
             }
-            this.takePicture(camera);
             return (
               <View
                 style={{

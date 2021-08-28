@@ -8,6 +8,7 @@ import {
   VirtualizedList,
   SafeAreaView,
   StatusBar,
+  ToastAndroid,
 } from 'react-native';
 import http from '../../http';
 import Loading from '../../components/Loading';
@@ -101,7 +102,11 @@ class List extends React.Component {
   };
 
   toDetail = (data, index) => {
-    this.props.navigation.navigate('Detail', {...data, _index: index + 1});
+    this.props.navigation.navigate('Detail', {
+      ...data,
+      _index: index,
+      _list: this.state.list,
+    });
   };
 
   getItem = (data, index) => {
@@ -129,6 +134,32 @@ class List extends React.Component {
     return index;
   };
 
+  completeButton = () => {
+    const {params} = this.props.route;
+    if (params.complete_num > 0) {
+      http
+        .updateRecBatchStatus({
+          id: this.props.route.params.id,
+          rec_status: 4,
+        })
+        .then(response => {
+          if (response.data.code === 0) {
+            ToastAndroid.show('提交成功', ToastAndroid.TOP);
+          } else {
+            ToastAndroid.show(
+              '提交失败:' + response.data.msg,
+              ToastAndroid.TOP,
+            );
+          }
+        })
+        .catch(error => {
+          ToastAndroid.show('更新状态报错:' + error.message, ToastAndroid.TOP);
+        });
+    } else {
+      ToastAndroid.show('还未录制任务', ToastAndroid.TOP);
+    }
+  };
+
   render() {
     const {params} = this.props.route;
     return (
@@ -139,7 +170,9 @@ class List extends React.Component {
             <Text style={styles.title}>
               {params.title}({params.complete_num}/{params.selected_num})
             </Text>
-            <TouchableOpacity style={styles.button}>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => this.completeButton()}>
               <Text style={styles.buttonText}>完成</Text>
             </TouchableOpacity>
           </View>
