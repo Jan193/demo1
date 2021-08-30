@@ -1,6 +1,12 @@
 import React from 'react';
 import {connect} from 'react-redux';
-import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  BackHandler,
+} from 'react-native';
 import {RNCamera} from 'react-native-camera';
 // import CameraRoll from '@react-native-community/cameraroll';
 import RNFetchBlob from 'rn-fetch-blob';
@@ -44,6 +50,10 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     margin: 20,
   },
+  closeButton: {
+    color: '#fff',
+    fontSize: 18,
+  },
 });
 
 class Recording extends React.Component {
@@ -51,7 +61,11 @@ class Recording extends React.Component {
     super(props);
   }
 
-  componentDidMount() {}
+  componentDidMount() {
+    BackHandler.addEventListener('hardwareBackPress', () => {
+      console.log('hardwareBackPress...');
+    });
+  }
 
   componentWillUnmount() {
     // this.cameraVM.stopRecording();
@@ -59,64 +73,44 @@ class Recording extends React.Component {
 
   cameraVM = null;
 
-  async takePicture(camera) {
-    this.cameraVM = await camera;
-    setTimeout(() => {
-      this.startRecording(camera);
-    }, 200);
+  takePicture(camera) {
+    if (camera) {
+      try {
+        this.cameraVM = camera;
+        setTimeout(() => {
+          this.startRecording(camera);
+        }, 100);
+      } catch (e) {
+        console.error('相机捕获错误:', e);
+      }
+    }
   }
 
   async startRecording(camera) {
-    const promise = await camera.recordAsync();
-    if (promise) {
-      const data = await promise;
-      const arr = data.uri.split('/');
-      const name = arr[arr.length - 1].split('.')[0];
-      const p = {
-        name: name,
-        type: 'video/mp4',
-        filename: arr[arr.length - 1],
-        data: RNFetchBlob.wrap(data.uri.split('//')[1].slice(1)),
-        _local: data.uri,
-        fk_works_id: this.props.currentData.fk_works_id,
-      };
-      this.props.saveVideo(p);
-
-      // RNFetchBlob.fetch(
-      //   'POST',
-      //   'https://yist.bfwit.net/upload',
-      //   {
-      //     Authorization: 'Bearer access-token',
-      //     otherHeader: 'foo',
-      //     'Content-Type': 'multipart/form-data',
-      //   },
-      //   [p],
-      // )
-      //   .then(response => {
-      //     console.log(response.text());
-      //   })
-      //   .catch(err => {
-      //     console.log(err);
-      //   });
-
-      // CameraRoll.save(data.uri).then(res => {
-      //   RNFS.readDir(RNFS.DocumentDirectoryPath)
-      //     .then(result => {
-      //       return Promise.all([RNFS.stat(result[3].path), result[3].path]);
-      //     })
-      //     .then(statResult => {
-      //       alert(JSON.stringify(statResult[0].isFile()));
-      //     });
-      // });
-      // await RNFS.readFile(data.uri.split('//')[1], 'utf8').then(data => {
-      //   alert(1);
-      // });
-      //   .then(result => {
-      //     return Promise.all([RNFS.stat(result[3].path), result[3].path]);
-      //   })
-      //   .then(statResult => {
-      //     alert(JSON.stringify(statResult[0]));
-      //   });
+    if (camera) {
+      try {
+        console.log('执行了几次');
+        const promise = await camera.recordAsync({
+          quality: camera.quality,
+          // mute: true,
+        });
+        if (promise) {
+          const data = await promise;
+          const arr = data.uri.split('/');
+          const name = arr[arr.length - 1].split('.')[0];
+          const p = {
+            name: name,
+            type: 'video/mp4',
+            filename: arr[arr.length - 1],
+            data: RNFetchBlob.wrap(data.uri.split('//')[1].slice(1)),
+            _local: data.uri,
+            fk_works_id: this.props.currentData.fk_works_id,
+          };
+          this.props.saveVideo(p);
+        }
+      } catch (e) {
+        console.error('相机捕获错误2:', e);
+      }
     }
   }
 
@@ -140,6 +134,9 @@ class Recording extends React.Component {
           flexDirection: 'row',
           justifyContent: 'center',
         }}>
+        <TouchableOpacity style={styles.capture}>
+          <Text style={styles.closeButton}>&#215;</Text>
+        </TouchableOpacity>
         <TouchableOpacity
           onPress={this.stopRecording.bind(this)}
           style={styles.capture}>

@@ -42,6 +42,7 @@ const Loading = props => {
           width="100"
           height="100"
         />
+        {props.text && <Text style={styles.text}>上传中...</Text>}
         {props.text && <Text style={styles.text}>{props.text}</Text>}
       </View>
     </View>

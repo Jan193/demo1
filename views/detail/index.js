@@ -8,123 +8,17 @@ import {
   Modal,
   Alert,
   ToastAndroid,
-  DrawerLayoutAndroid,
-  Button,
 } from 'react-native';
 import Recording from './recording';
 // import CameraRoll from '@react-native-community/cameraroll';
 import RNFetchBlob from 'rn-fetch-blob';
 import {connect} from 'react-redux';
-import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 
 import UploadLoading from '../../components/uploadLoading';
 import http from '../../http';
-// import http from '../../http';
-// import VideoList from './videoList';
+import DocumentPicker from 'react-native-document-picker';
 
 const padding = 10;
-
-const styles = StyleSheet.create({
-  index: {
-    minHeight: '100%',
-    display: 'flex',
-  },
-  buttonBox: {
-    display: 'flex',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 1,
-  },
-  button: {
-    width: '25%',
-    height: 100,
-    borderRightWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: '#eee',
-    backgroundColor: '#fff',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonText: {
-    marginTop: 'auto',
-    textAlign: 'center',
-    position: 'relative',
-    bottom: 10,
-  },
-
-  detail: {
-    marginTop: 2,
-    backgroundColor: '#fff',
-    padding,
-  },
-  detailFlip: {
-    marginTop: 2,
-    backgroundColor: '#fff',
-    padding,
-    transform: [{scaleX: -1}],
-  },
-  detailTitle: {
-    fontSize: 16,
-  },
-  detailContent: {
-    fontSize: 14,
-  },
-
-  bottom: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  bottomButton: {
-    borderRadius: 4,
-    backgroundColor: '#1CB84B',
-  },
-  bottomButtonText: {
-    width: 55,
-    height: 30,
-    lineHeight: 30,
-    textAlign: 'center',
-    color: '#fff',
-  },
-
-  icon: {
-    width: 30,
-    height: 30,
-    marginTop: 'auto',
-    // marginBottom: 'auto',
-  },
-
-  showCameraSelect: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-    width: '100%',
-    height: '100%',
-  },
-  showCameraSelectContainer: {
-    width: 200,
-    height: 100,
-    backgroundColor: '#fff',
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  cameraSelectText: {
-    textAlign: 'center',
-    lineHeight: 50,
-    color: '#1989fa',
-  },
-});
-
 class Home extends React.Component {
   constructor(props) {
     super(props);
@@ -137,6 +31,7 @@ class Home extends React.Component {
       isFlip: false,
       currentData: {},
       showCameraSelect: false,
+      uplodProgress: '上传中...', // 上传进度
     };
   }
 
@@ -148,66 +43,43 @@ class Home extends React.Component {
   }
 
   startRecording() {
-    // this.setState({isShowRecording: true});
-    // this.props.navigation.navigate('Recording', this.state.currentData);
-    /* launchCamera(
-      {
-        mediaType: 'video',
-        videoQuality: 'high',
-        cameraType: 'back',
-        selectionLimit: 0,
-      },
-      response => {
-        console.log('结果:', response);
-      },
-    ); */
-
     this.setState({showCameraSelect: true});
   }
-  album = () => {
+  // 相册中选择视频
+  album = async () => {
     this.setState({showCameraSelect: false});
-    launchImageLibrary(
-      {
-        mediaType: 'video',
-        videoQuality: 'high',
-        cameraType: 'back',
-        selectionLimit: 0,
-      },
-      response => {
-        console.log('response:', response);
-        const list = response.assets;
-        list.forEach(item => {
-          const p = {
-            // name: name,
-            type: 'video/mp4',
-            filename: item.fileName,
-            data: RNFetchBlob.wrap(item.uri.split('//')[1]),
+    try {
+      const res = await DocumentPicker.pickMultiple({
+        type: [DocumentPicker.types.video],
+      });
+      if (res.length > 0) {
+        res.forEach(item => {
+          const video = {
+            name: item.name.split('.')[0], // 不带后缀
+            type: item.type,
+            filename: item.name, // 带后缀
+            data: RNFetchBlob.wrap(item.uri),
             _local: item.uri,
             fk_works_id: this.state.currentData.fk_works_id,
           };
-          this.props.saveVideo(p);
+          this.props.saveVideo(video);
         });
-
-        // this.props.navigation.navigate('VideoPlayer', {
-        //   video: response.assets[0].uri,
-        // });
-      },
-    );
+      }
+    } catch (err) {
+      if (DocumentPicker.isCancel(err)) {
+      } else {
+        throw err;
+      }
+    }
   };
+  // 打开拍摄页面
   shot = () => {
     this.setState({showCameraSelect: false});
     this.props.navigation.navigate('Recording', this.state.currentData);
-    // launchCamera(
-    //   {
-    //     mediaType: 'video',
-    //     videoQuality: 'high',
-    //     cameraType: 'back',
-    //     selectionLimit: 0,
-    //   },
-    //   response => {
-    //     console.log('结果:', response);
-    //   },
-    // );
+  };
+
+  clickBackground = () => {
+    this.setState({showCameraSelect: false});
   };
 
   closeRecording() {
@@ -218,7 +90,6 @@ class Home extends React.Component {
     const {video_url} = this.state.currentData;
     if (video_url) {
       this.props.navigation.navigate('VideoPlayer', {
-        // video: 'http://yist.bfwit.net/upfile/20210824/img2060.mp4',
         video: video_url,
       });
     } else {
@@ -249,16 +120,27 @@ class Home extends React.Component {
       const {data, filename, name, type} = list[i];
       const param = {data, filename, name, type};
       this.setState({uploadLoading: true});
-      RNFetchBlob.fetch(
-        'POST',
-        'https://yist.bfwit.net/upload',
-        {
-          Authorization: 'Bearer access-token',
-          otherHeader: 'foo',
-          'Content-Type': 'multipart/form-data',
-        },
-        [param],
-      )
+      console.log('走了几次', param);
+      RNFetchBlob.config({
+        // trusty: true,
+        timeout: 6000,
+      })
+        .fetch(
+          'POST',
+          http.INTERFACE.upload,
+          {
+            Authorization: 'Bearer access-token',
+            otherHeader: 'foo',
+            'Content-Type': 'multipart/form-data',
+          },
+          [param],
+        )
+        .uploadProgress({interval: 200}, (received, total) => {
+          const progress = Math.floor((received / total) * 100) + '%';
+          const complete_total = i + 1 + '/' + list.length;
+          const uplodProgress = progress + ' ' + complete_total;
+          this.setState({uplodProgress: uplodProgress});
+        })
         .then(response => {
           console.log('上传成功:', response.data);
           this.setState({uploadLoading: false});
@@ -269,6 +151,7 @@ class Home extends React.Component {
           }
         })
         .catch(error => {
+          console.log(error);
           this.setState({uploadLoading: false});
           ToastAndroid.show('上传出错:' + error.message, ToastAndroid.TOP);
           reject(error);
@@ -326,23 +209,6 @@ class Home extends React.Component {
         },
       },
     ]);
-
-    // RNFS.readDir(RNFS.CachesDirectoryPath)
-    //   .then(result => {
-    //     console.log('result:', result);
-    //     // alert(JSON.stringify(result[3]));
-    //     return Promise.all([RNFS.stat(result[3].path), result[3].path]);
-    //   })
-    //   .then(statResult => {
-    //     alert(JSON.stringify(statResult[0]));
-    //   });
-    // alert(RNFS.ExternalStorageDirectoryPath);
-
-    // CameraRoll.getPhotos({
-    //   first: 1,
-    //   assetType: 'Videos',
-    // }).then(res => {
-    // });
   }
   setModalVisible = visible => {
     this.setState({modalVisible: visible});
@@ -403,13 +269,17 @@ class Home extends React.Component {
     this.setState({isFlip: !this.state.isFlip});
   }
 
+  closeCameraSelect = () => {
+    this.setState({showCameraSelect: false});
+  };
+
   render() {
     // const {params} = this.props.route;
     const params = this.state.currentData;
-    const {modalVisible, isFlip} = this.state;
+    const {modalVisible, isFlip, uplodProgress} = this.state;
     return (
       <View style={styles.index}>
-        {this.state.uploadLoading && <UploadLoading text="上传中..." />}
+        {this.state.uploadLoading && <UploadLoading text={uplodProgress} />}
         <Modal
           animationType="slide"
           transparent={true}
@@ -424,10 +294,13 @@ class Home extends React.Component {
           transparent={true}
           visible={this.state.showCameraSelect}
           onRequestClose={() => {
-            Alert.alert('Modal has been closed.');
-            // this.setModalVisible(!this.state.showCameraSelect);
+            this.clickBackground();
           }}>
           <View style={styles.showCameraSelect}>
+            <TouchableOpacity
+              style={styles.cameraOpacity}
+              onPress={() => this.closeCameraSelect()}
+            />
             <View style={styles.showCameraSelectContainer}>
               <TouchableOpacity onPress={() => this.album()}>
                 <Text style={styles.cameraSelectText}>从相册选择</Text>
@@ -534,6 +407,112 @@ class Home extends React.Component {
     );
   }
 }
+
+const styles = StyleSheet.create({
+  index: {
+    minHeight: '100%',
+    display: 'flex',
+  },
+  buttonBox: {
+    display: 'flex',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 1,
+  },
+  button: {
+    width: '25%',
+    height: 100,
+    borderRightWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#eee',
+    backgroundColor: '#fff',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonText: {
+    marginTop: 'auto',
+    textAlign: 'center',
+    position: 'relative',
+    bottom: 10,
+  },
+
+  detail: {
+    marginTop: 2,
+    backgroundColor: '#fff',
+    padding,
+  },
+  detailFlip: {
+    marginTop: 2,
+    backgroundColor: '#fff',
+    padding,
+    transform: [{scaleX: -1}],
+  },
+  detailTitle: {
+    fontSize: 16,
+  },
+  detailContent: {
+    fontSize: 14,
+  },
+
+  bottom: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  bottomButton: {
+    borderRadius: 4,
+    backgroundColor: '#1CB84B',
+  },
+  bottomButtonText: {
+    width: 55,
+    height: 30,
+    lineHeight: 30,
+    textAlign: 'center',
+    color: '#fff',
+  },
+
+  icon: {
+    width: 30,
+    height: 30,
+    marginTop: 'auto',
+    // marginBottom: 'auto',
+  },
+
+  showCameraSelect: {
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100%',
+    height: '100%',
+  },
+  cameraOpacity: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+  },
+  showCameraSelectContainer: {
+    width: '100%',
+    // height: 100,
+    backgroundColor: '#fff',
+    borderRadius: 4,
+    position: 'absolute',
+    bottom: 0,
+  },
+  cameraSelectText: {
+    textAlign: 'center',
+    lineHeight: 60,
+    fontSize: 17,
+    color: '#1989fa',
+    borderTopWidth: 1,
+    borderColor: '#eee',
+  },
+});
 
 const mapStateToProps = state => {
   return {

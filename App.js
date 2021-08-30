@@ -70,7 +70,7 @@ const App = () => {
           <RootStack.Screen
             name="Recording"
             component={Recording}
-            options={{...headerOptions}}
+            options={{...headerOptions, headerShown: false}}
           />
         </RootStack.Navigator>
       </NavigationContainer>

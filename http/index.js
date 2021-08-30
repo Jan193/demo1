@@ -5,8 +5,21 @@ import app from '../redux/reducers/app';
 
 const store = createStore(app);
 
+const domain_dev = 'https://yist.bfwit.net';
+const domain_prod = 'https://yist.bfwit.cn';
+
+const DOMAIN = domain_dev;
+
+const INTERFACE = {
+  upload: '/upload',
+};
+// 给INTERFACE中的接口地址加上域名
+for (const key in INTERFACE) {
+  INTERFACE[key] = DOMAIN + INTERFACE[key];
+}
+
 const axios = Axios.create({
-  baseURL: 'https://yist.bfwit.net/JAI/wx',
+  baseURL: DOMAIN + '/JAI/wx',
 });
 
 axios.interceptors.request.use(
@@ -83,6 +96,7 @@ export const updateRecBatchStatus = data =>
   axios.post('/wx/recommend/updateRecBatchStatus.json', data);
 
 export default {
+  INTERFACE,
   getToken,
   platUserLogin,
   getRecTaskList,

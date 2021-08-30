@@ -198,6 +198,7 @@ dependencies {
     implementation project(':react-native-fs')
     compile project(':@react-native-community_cameraroll')
     compile project(':react-native-video')
+    compile project(':react-native-image-picker')
 
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}") {

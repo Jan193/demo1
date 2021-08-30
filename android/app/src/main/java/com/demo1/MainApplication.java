@@ -13,8 +13,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import com.rnfs.RNFSPackage; // <------- add package
 import com.reactnativecommunity.cameraroll.CameraRollPackage;
+// import com.tencent.wework.api.model.WWMediaText;
+// import com.tencent.wework.api.WWAPIFactory;
 
 public class MainApplication extends Application implements ReactApplication {
+
+  private static final String APPID = "WW1e933be11645237c";
+  private static final String AGENTID = "1000012";
+  private static final String SCHEMA = "wwauth7ab3aa98b16a0acb000013";
 
   private final ReactNativeHost mReactNativeHost =
       new ReactNativeHost(this) {
@@ -29,7 +35,7 @@ public class MainApplication extends Application implements ReactApplication {
           List<ReactPackage> packages = new PackageList(this).getPackages();
           // Packages that cannot be autolinked yet can be added manually here, for example:
           // packages.add(new MyReactNativePackage());
-          return packages;
+          return packages;  
         }
 
         @Override
@@ -48,6 +54,9 @@ public class MainApplication extends Application implements ReactApplication {
     super.onCreate();
     SoLoader.init(this, /* native exopackage */ false);
     initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
+
+    // iwwapi = WWAPIFactory.createWWAPI(this);
+    // iwwapi.registerApp(SCHEMA);
   }
 
   /**
