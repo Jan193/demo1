@@ -18,8 +18,8 @@ import com.reactnativecommunity.cameraroll.CameraRollPackage;
 
 public class MainApplication extends Application implements ReactApplication {
 
-  private static final String APPID = "WW1e933be11645237c";
-  private static final String AGENTID = "1000012";
+  private static final String APPID = "ww7ab3aa98b16a0acb";
+  private static final String AGENTID = "1000013";
   private static final String SCHEMA = "wwauth7ab3aa98b16a0acb000013";
 
   private final ReactNativeHost mReactNativeHost =
@@ -54,9 +54,6 @@ public class MainApplication extends Application implements ReactApplication {
     super.onCreate();
     SoLoader.init(this, /* native exopackage */ false);
     initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
-
-    // iwwapi = WWAPIFactory.createWWAPI(this);
-    // iwwapi.registerApp(SCHEMA);
   }
 
   /**

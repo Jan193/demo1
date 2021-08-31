@@ -199,6 +199,7 @@ dependencies {
     compile project(':@react-native-community_cameraroll')
     compile project(':react-native-video')
     compile project(':react-native-image-picker')
+    compile files('libs/wwapi.jar')
 
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}") {

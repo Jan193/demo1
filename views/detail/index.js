@@ -120,7 +120,6 @@ class Home extends React.Component {
       const {data, filename, name, type} = list[i];
       const param = {data, filename, name, type};
       this.setState({uploadLoading: true});
-      console.log('走了几次', param);
       RNFetchBlob.config({
         // trusty: true,
         timeout: 6000,
