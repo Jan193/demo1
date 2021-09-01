@@ -6,7 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   StatusBar,
-  Alert,
+  ToastAndroid,
 } from 'react-native';
 import Loading from '../../components/Loading';
 import {connect} from 'react-redux';
@@ -17,33 +17,35 @@ class Home extends React.Component {
     super(props);
     this.state = {
       list: [],
-      loading: true,
+      loading: false,
     };
   }
 
   componentDidMount() {
-    this.getToken();
+    // if (!this.props.token) {
+    //   return this.props.navigation.navigate('Login');
+    // } else {
+    //   this.getIndexList();
+    // }
+    this.getIndexList();
   }
 
-  getToken() {
-    http.getToken().then(() => {
-      this.getIndexList();
-    });
-  }
-
-  getIndexList(token) {
+  getIndexList() {
+    this.setState({loading: true});
     http
-      .getRecTaskList(token)
+      .getRecTaskList()
       .then(res => {
         this.setState({loading: false});
         if (res.data.code === 0) {
           this.setState({list: res.data.data});
+        } else if (res.data.code === -1) {
+          ToastAndroid.show(res.data.msg, ToastAndroid.TOP);
+          this.props.navigation.navigate('Login');
         } else {
-          Alert.alert('提示', res.data.msg);
         }
       })
       .catch(err => {
-        Alert.alert('错误提示', err);
+        ToastAndroid.show(err.message, ToastAndroid.TOP);
         this.setState({loading: false});
       });
   }
@@ -95,14 +97,12 @@ class Home extends React.Component {
 
 const mapStateToProps = state => {
   return {
-    token: state.token,
+    token: state.app.token,
   };
 };
 
 const mapDispatchToProps = dispatch => {
-  return {
-    saveToken: data => dispatch({type: 'saveToken', data}),
-  };
+  return {};
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Home);

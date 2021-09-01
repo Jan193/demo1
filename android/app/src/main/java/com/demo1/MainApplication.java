@@ -13,8 +13,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import com.rnfs.RNFSPackage; // <------- add package
 import com.reactnativecommunity.cameraroll.CameraRollPackage;
-// import com.tencent.wework.api.model.WWMediaText;
-// import com.tencent.wework.api.WWAPIFactory;
 
 public class MainApplication extends Application implements ReactApplication {
 

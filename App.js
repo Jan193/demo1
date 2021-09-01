@@ -20,6 +20,7 @@ import Detail from './views/detail';
 import VideoPlayer from './views/videoPlay/VideoPlayer';
 import VideoList from './views/detail/videoList';
 import Recording from './views/recording';
+import Login from './views/login';
 
 const RootStack = createNativeStackNavigator();
 
@@ -32,12 +33,13 @@ const App = () => {
   return (
     <Provider store={store}>
       <NavigationContainer>
-        <RootStack.Navigator initialRouteName="Home">
+        <RootStack.Navigator initialRouteName="Login">
           <RootStack.Screen
             name="Home"
             component={Home}
             options={{
               ...headerOptions,
+              headerBackVisible: false,
               headerStyle: {
                 backgroundColor: '#fff',
               },
@@ -71,6 +73,15 @@ const App = () => {
             name="Recording"
             component={Recording}
             options={{...headerOptions, headerShown: false}}
+          />
+          <RootStack.Screen
+            name="Login"
+            component={Login}
+            options={{
+              ...headerOptions,
+              title: '登录',
+              headerBackVisible: false,
+            }}
           />
         </RootStack.Navigator>
       </NavigationContainer>

@@ -1,9 +1,9 @@
+import React from 'react';
 import Axios from 'axios';
 import {Alert} from 'react-native';
 import {createStore} from 'redux';
 import app from '../redux/reducers/app';
-
-const store = createStore(app);
+import globalData from '../redux/data';
 
 const domain_dev = 'https://yist.bfwit.net';
 const domain_prod = 'https://yist.bfwit.cn';
@@ -18,6 +18,8 @@ for (const key in INTERFACE) {
   INTERFACE[key] = DOMAIN + INTERFACE[key];
 }
 
+const store = createStore(app);
+
 const axios = Axios.create({
   baseURL: DOMAIN + '/JAI/wx',
 });
@@ -25,7 +27,7 @@ const axios = Axios.create({
 axios.interceptors.request.use(
   config => {
     try {
-      const {token} = store.getState();
+      const {token} = globalData;
       if (token) {
         config.headers.token = token;
       }
@@ -41,12 +43,22 @@ axios.interceptors.request.use(
 
 axios.interceptors.response.use(
   response => {
+    if (response.data.code === -1) {
+    }
     return response;
   },
   error => {
     return error;
   },
 );
+
+// 手机号登录
+export const loginByMobile = data =>
+  axios.post('/user/loginByMobile.json', data);
+
+// 获取手机验证码
+export const getVerificationCode = data =>
+  axios.post('/user/getVerificationCode.json', data);
 
 // 登录接口
 export const platUserLogin = data =>
@@ -105,4 +117,6 @@ export default {
   addRecTaskVideo,
   updateRecTaskStatus,
   updateRecBatchStatus,
+  loginByMobile,
+  getVerificationCode,
 };
