@@ -37,6 +37,7 @@ class Home extends React.Component {
 
   componentDidMount() {
     const {params} = this.props.route;
+    console.log(params);
     const data = params._list[params._index];
     data._index = params._index;
     this.setState({currentData: data});
@@ -141,7 +142,6 @@ class Home extends React.Component {
           this.setState({uplodProgress: uplodProgress});
         })
         .then(response => {
-          console.log('上传成功:', response.data);
           this.setState({uploadLoading: false});
           const responseData = response.json();
           if (responseData.code === 0) {
@@ -150,7 +150,6 @@ class Home extends React.Component {
           }
         })
         .catch(error => {
-          console.log(error);
           this.setState({uploadLoading: false});
           ToastAndroid.show('上传出错:' + error.message, ToastAndroid.TOP);
           reject(error);
@@ -163,8 +162,8 @@ class Home extends React.Component {
     this.videoUpload(list, i).then(() => {
       i++;
       if (i === list.length) {
+        this.updateRecTaskStatus();
         ToastAndroid.show('上传完成', ToastAndroid.TOP);
-        // this.setState({uploadLoading: false});
         this.props.clearVideo(this.state.currentData);
         return;
       }
@@ -178,6 +177,7 @@ class Home extends React.Component {
         content_status: 2,
       })
       .then(res => {
+        console.log('状态更新了:', res.data);
         if (res.data.code !== 0) {
           ToastAndroid.show(
             '录制状态更改失败:' + res.data.msg,
@@ -238,7 +238,7 @@ class Home extends React.Component {
   }
   // 显示文案
   showText() {
-    ToastAndroid.show('该功能开发中...', ToastAndroid.TOP);
+    // ToastAndroid.show('该功能开发中...', ToastAndroid.TOP);
   }
 
   prevData() {

@@ -7,35 +7,71 @@ import {
   TouchableOpacity,
   StatusBar,
   ToastAndroid,
+  BackHandler,
 } from 'react-native';
 import Loading from '../../components/Loading';
 import {connect} from 'react-redux';
 import http from '../../http';
+import storage from '../../js/storage';
 
 class Home extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       list: [],
-      loading: false,
+      loading: true,
+      refreshing: false,
     };
   }
 
+  lastTime = 0;
+
   componentDidMount() {
-    // if (!this.props.token) {
-    //   return this.props.navigation.navigate('Login');
-    // } else {
-    //   this.getIndexList();
-    // }
-    this.getIndexList();
+    storage
+      .load({key: 'userInfo'})
+      .then(res => {
+        if (res && res.token) {
+          this.getIndexList();
+        } else {
+          this.props.navigation.navigate('Login');
+        }
+      })
+      .catch(err => {
+        console.log('加载存储数据错误:', err);
+        this.props.navigation.navigate('Login');
+      });
+
+    BackHandler.addEventListener('back', this.backHandle);
   }
+
+  componentWillUnmount() {
+    BackHandler.removeEventListener('back', this.backHandle);
+    this.lastTime = 0;
+  }
+
+  backHandle = () => {
+    const data = this.props.navigation.getState();
+    if (data.index === 1) {
+      let time = Date.now();
+      if (time - this.lastTime <= 2000) {
+        BackHandler.exitApp();
+        return false;
+      } else {
+        ToastAndroid.show('再按一次退出应用', ToastAndroid.SHORT);
+        this.lastTime = time;
+        return true;
+      }
+    } else {
+      return false;
+    }
+  };
 
   getIndexList() {
     this.setState({loading: true});
     http
       .getRecTaskList()
       .then(res => {
-        this.setState({loading: false});
+        this.setState({loading: false, refreshing: false});
         if (res.data.code === 0) {
           this.setState({list: res.data.data});
         } else if (res.data.code === -1) {
@@ -46,7 +82,7 @@ class Home extends React.Component {
       })
       .catch(err => {
         ToastAndroid.show(err.message, ToastAndroid.TOP);
-        this.setState({loading: false});
+        this.setState({loading: false, refreshing: false});
       });
   }
 
@@ -54,32 +90,25 @@ class Home extends React.Component {
     this.props.navigation.navigate('List', item);
   }
 
+  onRefresh = () => {
+    this.setState({refreshing: true});
+    this.getIndexList();
+  };
+
   render() {
-    const styles = StyleSheet.create({
-      home: {
-        minHeight: '100%',
-      },
-      box: {
-        backgroundColor: '#fff',
-        marginTop: 6,
-        padding: 10,
-      },
-      boxTitle: {
-        marginBottom: 5,
-        fontSize: 15,
-        color: '#666',
-      },
-    });
     return (
       <View style={styles.home}>
         <StatusBar backgroundColor="white" barStyle="dark-content" />
         {this.state.loading && <Loading />}
         <FlatList
           data={this.state.list}
+          onRefresh={this.onRefresh}
+          refreshing={this.state.refreshing}
           renderItem={data => {
             return (
               <TouchableOpacity
                 style={styles.box}
+                activeOpacity={0.8}
                 onPress={this.toList.bind(this, data.item)}>
                 <Text style={styles.boxTitle}>{data.item.title}</Text>
                 <Text>
@@ -94,6 +123,22 @@ class Home extends React.Component {
     );
   }
 }
+
+const styles = StyleSheet.create({
+  home: {
+    minHeight: '100%',
+  },
+  box: {
+    backgroundColor: '#fff',
+    marginTop: 6,
+    padding: 10,
+  },
+  boxTitle: {
+    marginBottom: 5,
+    fontSize: 15,
+    color: '#666',
+  },
+});
 
 const mapStateToProps = state => {
   return {

@@ -9,8 +9,10 @@ import {
   StatusBar,
 } from 'react-native';
 import {connect} from 'react-redux';
+import Loading from '../../components/Loading';
 import http from '../../http';
 import globalData from '../../redux/data';
+import storage from '../../js/storage';
 
 class Login extends React.Component {
   constructor(props) {
@@ -21,40 +23,55 @@ class Login extends React.Component {
       time: 60,
       showTime: false,
       showSend: true,
+      loading: true,
     };
   }
 
   timer = null;
 
   componentDidMount() {
-    if (this.props.token) {
-      return this.props.navigation.navigate('Home');
-    }
+    storage
+      .load({key: 'userInfo'})
+      .then(async res => {
+        this.setState({loading: false});
+        if (res && res.token) {
+          await this.props.saveToken(res.token);
+          globalData.token = res.token;
+          await this.props.navigation.navigate('Home');
+        }
+      })
+      .catch(err => {
+        this.setState({loading: false});
+        console.log('加载存储数据错误login:', err);
+      });
   }
 
   login = () => {
+    const {phoneNumber, code} = this.state;
+    if (!phoneNumber || !code) {
+      return;
+    }
+
     http
       .loginByMobile({
-        mobile: this.state.phoneNumber,
-        verificationCode: this.state.code,
+        mobile: phoneNumber,
+        verificationCode: code,
       })
       .then(async response => {
-        console.log('登录请求:', response.data);
         const responseData = response.data;
         if (responseData.code === 0) {
           await this.props.saveToken(responseData.token);
-          // this.props.saveUserInfo(responseData.data);
-          console.log('存储完成获取：', this.props.token);
+          await storage.save({
+            key: 'userInfo',
+            data: {...responseData.data, token: responseData.token},
+          });
           globalData.token = responseData.token;
-          if (this.props.token) {
-            this.props.navigation.navigate('Home');
-          }
+          this.props.navigation.navigate('Home');
         } else {
           ToastAndroid.show(responseData.msg, ToastAndroid.TOP);
         }
       })
       .catch(error => {
-        console.log('登录错误:', error);
         ToastAndroid.show(error.message, ToastAndroid.TOP);
       });
   };
@@ -81,19 +98,23 @@ class Login extends React.Component {
       http
         .getVerificationCode({mobile: this.state.phoneNumber})
         .then(response => {
-          console.log(response.data);
+          clearInterval(this.timer);
+          this.setState({showTime: false, showSend: true});
           if (response.data.code === 0) {
             this.setState({
-              showTime: false,
-              showSend: false,
               code: response.data.data,
             });
-            clearInterval(this.timer);
           } else {
-            ToastAndroid.show(response.data.msg, ToastAndroid.TOP);
+            ToastAndroid.showWithGravity(
+              response.data.msg,
+              ToastAndroid.LONG,
+              ToastAndroid.BOTTOM,
+            );
           }
         })
         .catch(error => {
+          clearInterval(this.timer);
+          this.setState({showTime: false, showSend: true});
           ToastAndroid.show(error.message, ToastAndroid.TOP);
         });
     } else if (!this.state.phoneNumber) {
@@ -113,10 +134,12 @@ class Login extends React.Component {
   };
 
   render() {
+    console.log('rendering...');
     const {phoneNumber, code, showTime, time, showSend} = this.state;
     return (
       <View style={styles.page}>
         <StatusBar barStyle="dark-content" backgroundColor="white" />
+        {this.state.loading && <Loading />}
         <View style={styles.row}>
           <Text style={styles.label}>手机号</Text>
           <TextInput
@@ -138,13 +161,19 @@ class Login extends React.Component {
           />
           {showTime && <Text style={styles.time}>{time}</Text>}
           {showSend && (
-            <TouchableOpacity style={styles.sendButton} onPress={this.sendCode}>
+            <TouchableOpacity
+              style={styles.sendButton}
+              onPress={this.sendCode}
+              activeOpacity={0.7}>
               <Text style={styles.sendText}>发送</Text>
             </TouchableOpacity>
           )}
         </View>
         <View style={styles.buttonBox}>
-          <TouchableOpacity style={styles.button} onPress={this.login}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={this.login}
+            activeOpacity={0.7}>
             <Text style={styles.buttonText}>登录</Text>
           </TouchableOpacity>
         </View>

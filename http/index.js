@@ -1,4 +1,3 @@
-import React from 'react';
 import Axios from 'axios';
 import {Alert} from 'react-native';
 import {createStore} from 'redux';

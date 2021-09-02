@@ -73,9 +73,11 @@ class VideoList extends React.Component {
 
   playVideo = uri => {
     this.props.navigation.navigate('VideoPlayer', {
-      // video: 'http://yist.bfwit.net/upfile/20210824/img2060.mp4',
       video: uri,
     });
+    // this.props.navigation.navigate('Testvideo', {
+    //   video: uri,
+    // });
   };
 
   getLocalStyle = () => {

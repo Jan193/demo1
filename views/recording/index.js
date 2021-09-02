@@ -1,10 +1,14 @@
 import React from 'react';
 import {connect} from 'react-redux';
-import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  StatusBar,
+} from 'react-native';
 import {RNCamera} from 'react-native-camera';
-// import CameraRoll from '@react-native-community/cameraroll';
 import RNFetchBlob from 'rn-fetch-blob';
-import {useIsFocused} from '@react-navigation/core';
 
 const PendingView = () => (
   <View
@@ -34,12 +38,6 @@ class Recording extends React.Component {
     this.setState({
       currentData: this.props.route.params,
     });
-    // try {
-    //   this.startRecording(this.camera);
-    // } catch (e) {
-    //   console.log('============catch==========');
-    //   console.log(e);
-    // }
   }
 
   async takePicture(camera) {
@@ -62,9 +60,6 @@ class Recording extends React.Component {
         if (promise) {
           const data = await promise;
           if (this.isSave) {
-            console.log('================data====================');
-            console.log(data);
-            console.log('====================================');
             const arr = data.uri.split('/');
             const name = arr[arr.length - 1].split('.')[0];
             const p = {
@@ -75,9 +70,6 @@ class Recording extends React.Component {
               _local: data.uri,
               fk_works_id: this.state.currentData.fk_works_id,
             };
-            console.log('================p====================');
-            console.log(p);
-            console.log('====================================');
             this.props.saveVideo(p);
           }
         }
@@ -168,6 +160,7 @@ class Recording extends React.Component {
   render() {
     return (
       <View style={styles.page}>
+        <StatusBar hidden={true} />
         <RNCamera
           style={styles.preview}
           type={RNCamera.Constants.Type.back}

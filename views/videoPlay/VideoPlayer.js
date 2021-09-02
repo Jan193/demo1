@@ -1,25 +1,13 @@
 import React from 'react';
 import Video from 'react-native-video';
-import {StyleSheet, ToastAndroid, View} from 'react-native';
-
-const styles = StyleSheet.create({
-  page: {
-    width: '100%',
-    height: '100%',
-    display: 'flex',
-  },
-  fullScreen: {
-    // position: 'relative',
-    // top: '50%',
-    // left: '50%',
-    // right: 0,
-    // bottom: 0,
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 1)',
-    width: '100%',
-  },
-});
-
+import {
+  StyleSheet,
+  StatusBar,
+  View,
+  TouchableOpacity,
+  Text,
+  ActivityIndicator,
+} from 'react-native';
 export default class VideoPlayer extends React.Component {
   constructor(props) {
     super(props);
@@ -31,6 +19,7 @@ export default class VideoPlayer extends React.Component {
       duration: 0.0,
       currentTime: 0.0,
       paused: true,
+      loading: false,
     };
   }
 
@@ -38,8 +27,8 @@ export default class VideoPlayer extends React.Component {
   video = null;
 
   onLoad = () => {
-    // console.log('onLoad');
-    this.video.seek(-1);
+    this.setState({loading: false});
+    this.video.seek(0);
   };
   onProgress = () => {
     // console.log('onProgress');
@@ -54,11 +43,22 @@ export default class VideoPlayer extends React.Component {
     // console.log('onAudioFocusChanged');
   };
 
+  closeVideo = () => {
+    this.props.navigation.goBack();
+  };
+
+  onReadyForDisplay = () => {};
+
   render() {
     // const {videoURI} = this.props.route.params;
     const videoURI = this.props.route.params.video;
     return (
       <View style={styles.page}>
+        <StatusBar
+          hidden={false}
+          backgroundColor="#000"
+          barStyle="light-content"
+        />
         <Video
           ref={ref => {
             //方法对引用Video元素的ref引用进行操作
@@ -79,8 +79,60 @@ export default class VideoPlayer extends React.Component {
           onAudioFocusChanged={this.onAudioFocusChanged} //音频焦点丢失时的回调 - 如果焦点丢失则暂停
           repeat={false} //确定在到达结尾时是否重复播放视频。
           controls={true}
+          onReadyForDisplay={this.onReadyForDisplay}
         />
+        <TouchableOpacity style={styles.closeButton} onPress={this.closeVideo}>
+          <Text style={styles.closeText}>&#215;</Text>
+        </TouchableOpacity>
+
+        {this.state.loading && (
+          <View style={styles.videoLoading}>
+            <ActivityIndicator size="large" color="#fff" />
+            <Text style={styles.loadingText}>努力加载中...</Text>
+          </View>
+        )}
       </View>
     );
   }
 }
+
+const styles = StyleSheet.create({
+  page: {
+    width: '100%',
+    height: '100%',
+    // display: 'flex',
+  },
+  fullScreen: {
+    // position: 'relative',
+    // top: '50%',
+    // left: '50%',
+    // right: 0,
+    // bottom: 0,
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 1)',
+    width: '100%',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 5,
+    right: 10,
+    backgroundColor: 'transparent',
+    padding: 10,
+  },
+  closeText: {
+    color: '#fff',
+    fontSize: 25,
+  },
+  videoLoading: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#000',
+  },
+  loadingText: {
+    marginTop: 10,
+    color: 'white',
+  },
+});
