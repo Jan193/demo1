@@ -21,7 +21,6 @@ import Recording from './views/recording';
 import Login from './views/login';
 import storage from './js/storage';
 import globalData from './redux/data';
-// import Testvideo from './views/videoPlay/testvideo';
 
 const RootStack = createNativeStackNavigator();
 
@@ -59,7 +58,6 @@ class App extends React.Component {
       <Provider store={store}>
         <NavigationContainer>
           <RootStack.Navigator initialRouteName="Login">
-            {/* <RootStack.Screen name="Testvideo" component={Testvideo} /> */}
             <RootStack.Screen
               name="Login"
               component={Login}

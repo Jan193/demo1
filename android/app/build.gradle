@@ -148,11 +148,19 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        // release {
+        //     storeFile file(MYAPP_RELEASE_STORE_FILE)
+        //     storePassword MYAPP_RELEASE_STORE_PASSWORD
+        //     keyAlias MYAPP_RELEASE_KEY_ALIAS
+        //     keyPassword MYAPP_RELEASE_KEY_PASSWORD
+        // }
         release {
-            storeFile file(MYAPP_RELEASE_STORE_FILE)
-            storePassword MYAPP_RELEASE_STORE_PASSWORD
-            keyAlias MYAPP_RELEASE_KEY_ALIAS
-            keyPassword MYAPP_RELEASE_KEY_PASSWORD
+            if (project.hasProperty('MYAPP_RELEASE_STORE_FILE')) {
+                storeFile file(MYAPP_RELEASE_STORE_FILE)
+                storePassword MYAPP_RELEASE_STORE_PASSWORD
+                keyAlias MYAPP_RELEASE_KEY_ALIAS
+                keyPassword MYAPP_RELEASE_KEY_PASSWORD
+            }
         }
     }
     buildTypes {
@@ -196,9 +204,10 @@ dependencies {
 
     implementation project(':react-native-camera')
     implementation project(':react-native-fs')
-    compile project(':@react-native-community_cameraroll')
-    compile project(':react-native-video')
-    compile project(':react-native-image-picker')
+    implementation project(':@react-native-community_cameraroll')
+    implementation project(':react-native-video')
+    implementation "androidx.appcompat:appcompat:1.0.0"
+    implementation project(':react-native-image-picker')
 
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}") {

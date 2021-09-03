@@ -7,8 +7,8 @@ import {
   FlatList,
   StatusBar,
   Alert,
-  ToastAndroid,
   Image,
+  ToastAndroid,
 } from 'react-native';
 import {connect} from 'react-redux';
 import Loading from '../../components/Loading';
@@ -49,7 +49,11 @@ class VideoList extends React.Component {
         }
       })
       .catch(err => {
-        Alert.alert('错误提示', err);
+        ToastAndroid.showWithGravity(
+          err.message,
+          ToastAndroid.SHORT,
+          ToastAndroid.TOP,
+        );
         this.setState({loading: false});
       });
   }
@@ -75,9 +79,6 @@ class VideoList extends React.Component {
     this.props.navigation.navigate('VideoPlayer', {
       video: uri,
     });
-    // this.props.navigation.navigate('Testvideo', {
-    //   video: uri,
-    // });
   };
 
   getLocalStyle = () => {
