@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Text,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 export default class VideoPlayer extends React.Component {
   constructor(props) {
@@ -51,6 +52,10 @@ export default class VideoPlayer extends React.Component {
     this.props.navigation.goBack();
   };
 
+  onError = data => {
+    Alert.alert('提示', JSON.stringify(data));
+  };
+
   render() {
     const videoURI = this.props.route.params.video;
     return (
@@ -69,7 +74,7 @@ export default class VideoPlayer extends React.Component {
           //   uri: 'http://yist.bfwit.net/upfile/20210824/img2060.mp4',
           //   type: 'mpd',
           // }} //设置视频源
-          source={{uri: videoURI, type: 'mpd'}} //设置视频源
+          source={{uri: videoURI}} //设置视频源
           style={styles.fullScreen} //组件样式
           rate={this.state.rate} //播放速率
           paused={this.state.paused} //暂停
@@ -84,6 +89,7 @@ export default class VideoPlayer extends React.Component {
           onAudioFocusChanged={this.onAudioFocusChanged} //音频焦点丢失时的回调 - 如果焦点丢失则暂停
           repeat={false} //确定在到达结尾时是否重复播放视频。
           controls={true}
+          onError={this.onError}
         />
         <TouchableOpacity style={styles.closeButton} onPress={this.closeVideo}>
           <Text style={styles.closeText}>&#215;</Text>
