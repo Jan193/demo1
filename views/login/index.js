@@ -46,6 +46,26 @@ class Login extends React.Component {
       });
   }
 
+  connectWS = () => {
+    const ws = new WebSocket('ws://yist.bfwit.net/ws/app');
+    ws.binaryType = 'arraybuffer';
+    ws.onopen = () => {
+      console.log('连接成功...');
+      this.props.saveWS(ws);
+    };
+    ws.onmessage = e => {
+      console.log('接受消息:', e);
+    };
+    ws.onerror = err => {
+      console.log('错误:', err);
+      alert('ws连接错误');
+    };
+    ws.onclose = () => {
+      console.log('关闭了');
+      alert('ws关闭了');
+    };
+  };
+
   login = () => {
     const {phoneNumber, code} = this.state;
     if (!phoneNumber || !code) {
@@ -58,6 +78,9 @@ class Login extends React.Component {
         verificationCode: code,
       })
       .then(async response => {
+        console.log('====================================');
+        console.log(response.data);
+        console.log('====================================');
         const responseData = response.data;
         if (responseData.code === 0) {
           await this.props.saveToken(responseData.token);
@@ -67,11 +90,13 @@ class Login extends React.Component {
           });
           globalData.token = responseData.token;
           this.props.navigation.navigate('Home');
+          this.connectWS();
         } else {
           ToastAndroid.show(responseData.msg, ToastAndroid.TOP);
         }
       })
       .catch(error => {
+        console.log('error:', error);
         ToastAndroid.show(error.message, ToastAndroid.TOP);
       });
   };
@@ -253,6 +278,7 @@ const mapDispatchToProps = dispatch => {
   return {
     saveToken: data => dispatch({type: 'saveToken', data: data}),
     // saveUserInfo: data => dispatch({type: 'saveUserInfo', data}),
+    saveWS: data => dispatch({type: 'saveWS', data}),
   };
 };
 

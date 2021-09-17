@@ -38,15 +38,26 @@ class Recording extends React.Component {
     this.setState({
       currentData: this.props.route.params,
     });
+    if (this.props.ws) {
+      this.props.ws.onmessage = e => {
+        console.log('接受到拍摄指令:', e.data);
+      };
+    }
   }
 
   async takePicture(camera) {
     if (camera) {
       try {
         this.camera = camera;
-        setTimeout(() => {
-          this.startRecording();
-        }, 100);
+        // setTimeout(() => {
+        //   this.startRecording();
+        // }, 100);
+        if (this.props.ws) {
+          this.props.ws.onmessage = e => {
+            console.log('接受到拍摄指令:', e.data);
+          };
+          this.props.ws.send(JSON.stringify({type: 2, message: '我已就绪'}));
+        }
       } catch (e) {
         console.error('相机捕获错误:', e);
       }
@@ -236,6 +247,7 @@ const styles = StyleSheet.create({
 const mapStateToProps = state => {
   return {
     // videoInfo: state.videoInfo,
+    ws: state.app.ws,
   };
 };
 

@@ -8,8 +8,9 @@ const app = (state = initState, action) => {
     //   return state.token;
     // case 'saveUserInfo':
     //   return {...state, userInfo: action.data};
+    case 'saveWS':
+      return {...state, ws: action.data};
     default:
-      console.log(11);
       return state;
   }
 };
