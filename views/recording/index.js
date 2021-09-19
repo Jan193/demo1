@@ -6,9 +6,11 @@ import {
   StyleSheet,
   TouchableOpacity,
   StatusBar,
+  Alert,
 } from 'react-native';
 import {RNCamera} from 'react-native-camera';
 import RNFetchBlob from 'rn-fetch-blob';
+import storage from '../../js/storage';
 
 const PendingView = () => (
   <View
@@ -38,11 +40,18 @@ class Recording extends React.Component {
     this.setState({
       currentData: this.props.route.params,
     });
-    if (this.props.ws) {
-      this.props.ws.onmessage = e => {
-        console.log('接受到拍摄指令:', e.data);
-      };
-    }
+  }
+
+  getMobile() {
+    return new Promise(resolve => {
+      storage.load({key: 'userInfo'}).then(res => {
+        if (res && res.mobile) {
+          if (res.mobile === '13140097001') {
+            resolve(res.mobile);
+          }
+        }
+      });
+    });
   }
 
   async takePicture(camera) {
@@ -53,13 +62,35 @@ class Recording extends React.Component {
         //   this.startRecording();
         // }, 100);
         if (this.props.ws) {
-          this.props.ws.onmessage = e => {
-            console.log('接受到拍摄指令:', e.data);
+          this.getMobile().then(() => {
+            this.props.ws.send(
+              JSON.stringify({
+                token: this.props.token,
+                cmd: 'chart',
+                data: {
+                  type: 1,
+                },
+              }),
+            );
+          });
+
+          this.props.ws.onmessage = async e => {
+            const data = JSON.parse(e.data);
+            if (data.cmd === 'chart') {
+              if (data.data.type === 1) {
+                this.startRecording();
+              } else if (data.data.type === 2) {
+                this.isSave = true;
+                await this.camera.stopRecording();
+                await this.props.navigation.goBack();
+              }
+            }
           };
-          this.props.ws.send(JSON.stringify({type: 2, message: '我已就绪'}));
         }
       } catch (e) {
         console.error('相机捕获错误:', e);
+        Alert.alert('提示', e.message);
+        this.props.navigation.goBack();
       }
     }
   }
@@ -86,6 +117,8 @@ class Recording extends React.Component {
         }
       } catch (e) {
         console.log('捕获错误2:', e);
+        Alert.alert('提示', e.message);
+        this.props.navigation.goBack();
       }
     }
     /* RNFetchBlob.fetch(
@@ -139,9 +172,18 @@ class Recording extends React.Component {
   }
 
   async stopRecording() {
-    this.isSave = true;
-    await this.camera.stopRecording();
-    await this.props.navigation.goBack();
+    // this.isSave = true;
+    // await this.camera.stopRecording();
+    // await this.props.navigation.goBack();
+    this.props.ws.send(
+      JSON.stringify({
+        token: this.props.token,
+        cmd: 'chart',
+        data: {
+          type: 2,
+        },
+      }),
+    );
   }
 
   renderContent = ({camera, status, recordAudioPermissionStatus}) => {
@@ -248,6 +290,7 @@ const mapStateToProps = state => {
   return {
     // videoInfo: state.videoInfo,
     ws: state.app.ws,
+    token: state.app.token,
   };
 };
 

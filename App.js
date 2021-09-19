@@ -11,6 +11,7 @@ import {Provider} from 'react-redux';
 import store from './redux';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {AppState} from 'react-native';
 
 import Home from './views/home/index.js';
 import List from './views/list';
@@ -45,14 +46,18 @@ class App extends React.Component {
           this.props.saveToken(res.token);
           globalData.token = res.token;
           await this.props.navigation.navigate('Home');
-          // this.setState({isLogin: true});
         }
       })
-      .catch(err => {
-        console.log('加载存储数据错误login:', err);
+      .catch(() => {
         this.setState({isLogin: false});
       });
+
+    // AppState.addEventListener('change', this.appStateChange);
   }
+  componentWillUnmount() {
+    // AppState.removeEventListener('change', this.appStateChange);
+  }
+  appStateChange(nextAppState) {}
   render() {
     return (
       <Provider store={store}>

@@ -40,31 +40,10 @@ class Login extends React.Component {
           await this.props.navigation.navigate('Home');
         }
       })
-      .catch(err => {
+      .catch(() => {
         this.setState({loading: false});
-        console.log('加载存储数据错误login:', err);
       });
   }
-
-  connectWS = () => {
-    const ws = new WebSocket('ws://yist.bfwit.net/ws/app');
-    ws.binaryType = 'arraybuffer';
-    ws.onopen = () => {
-      console.log('连接成功...');
-      this.props.saveWS(ws);
-    };
-    ws.onmessage = e => {
-      console.log('接受消息:', e);
-    };
-    ws.onerror = err => {
-      console.log('错误:', err);
-      alert('ws连接错误');
-    };
-    ws.onclose = () => {
-      console.log('关闭了');
-      alert('ws关闭了');
-    };
-  };
 
   login = () => {
     const {phoneNumber, code} = this.state;
@@ -78,9 +57,6 @@ class Login extends React.Component {
         verificationCode: code,
       })
       .then(async response => {
-        console.log('====================================');
-        console.log(response.data);
-        console.log('====================================');
         const responseData = response.data;
         if (responseData.code === 0) {
           await this.props.saveToken(responseData.token);
@@ -90,13 +66,11 @@ class Login extends React.Component {
           });
           globalData.token = responseData.token;
           this.props.navigation.navigate('Home');
-          this.connectWS();
         } else {
           ToastAndroid.show(responseData.msg, ToastAndroid.TOP);
         }
       })
       .catch(error => {
-        console.log('error:', error);
         ToastAndroid.show(error.message, ToastAndroid.TOP);
       });
   };
@@ -159,7 +133,6 @@ class Login extends React.Component {
   };
 
   render() {
-    console.log('rendering...');
     const {phoneNumber, code, showTime, time, showSend} = this.state;
     return (
       <View style={styles.page}>

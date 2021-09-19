@@ -13,7 +13,6 @@ import Loading from '../../components/Loading';
 import {connect} from 'react-redux';
 import http from '../../http';
 import storage from '../../js/storage';
-
 class Home extends React.Component {
   constructor(props) {
     super(props);
@@ -26,7 +25,43 @@ class Home extends React.Component {
 
   lastTime = 0;
 
+  timer = null;
+
+  connectWS = () => {
+    console.log('连接...');
+    let ws = new WebSocket('ws://yist.bfwit.net/ws/app');
+    ws.onopen = () => {
+      this.props.saveWS(ws);
+      this.sendHeart(ws);
+    };
+    ws.onmessage = e => {
+      console.log('onmessage:', e.data);
+    };
+    ws.onclose = () => {
+      console.log('onclose...');
+      this.props.saveWS(null);
+      clearInterval(this.timer);
+    };
+  };
+
+  sendHeart(ws) {
+    storage.load({key: 'userInfo'}).then(async res => {
+      this.setState({loading: false});
+      if (res && res.token) {
+        this.timer = setInterval(() => {
+          ws.send(
+            JSON.stringify({
+              token: res.token,
+              cmd: 'heart',
+            }),
+          );
+        }, 2000);
+      }
+    });
+  }
+
   componentDidMount() {
+    this.connectWS();
     storage
       .load({key: 'userInfo'})
       .then(res => {
@@ -36,8 +71,7 @@ class Home extends React.Component {
           this.props.navigation.navigate('Login');
         }
       })
-      .catch(err => {
-        console.log('加载存储数据错误:', err);
+      .catch(() => {
         this.props.navigation.navigate('Login');
       });
 
@@ -143,11 +177,14 @@ const styles = StyleSheet.create({
 const mapStateToProps = state => {
   return {
     token: state.app.token,
+    ws: state.app.ws,
   };
 };
 
 const mapDispatchToProps = dispatch => {
-  return {};
+  return {
+    saveWS: data => dispatch({type: 'saveWS', data}),
+  };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Home);
