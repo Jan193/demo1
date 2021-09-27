@@ -29,8 +29,10 @@ class Home extends React.Component {
 
   connectWS = () => {
     console.log('连接...');
+    // let ws = new WebSocket('ws://192.168.10.22:3000');
     let ws = new WebSocket('ws://yist.bfwit.net/ws/app');
     ws.onopen = () => {
+      console.log('open...');
       this.props.saveWS(ws);
       this.sendHeart(ws);
     };

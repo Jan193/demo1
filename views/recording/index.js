@@ -30,6 +30,7 @@ class Recording extends React.Component {
       currentData: {},
       cameraVM: null,
       isSave: false, // 点击保存时为true
+      recordingState: 0, // 拍摄状态 0:未拍摄或拍摄结束 1:拍摄中
     };
   }
 
@@ -40,15 +41,29 @@ class Recording extends React.Component {
     this.setState({
       currentData: this.props.route.params,
     });
+
+    if (this.props.ws) {
+      this.props.ws.onmessage = async e => {
+        const data = JSON.parse(e.data);
+        console.log('录制页面msg: ', data);
+        if (data.cmd === 'chart') {
+          if (data.data.type === 1) {
+            this.startRecording();
+          } else if (data.data.type === 2) {
+            this.isSave = true;
+            await this.camera.stopRecording();
+            await this.props.navigation.goBack();
+          }
+        }
+      };
+    }
   }
 
   getMobile() {
     return new Promise(resolve => {
       storage.load({key: 'userInfo'}).then(res => {
         if (res && res.mobile) {
-          if (res.mobile === '13140097001') {
-            resolve(res.mobile);
-          }
+          resolve(res.mobile);
         }
       });
     });
@@ -61,8 +76,19 @@ class Recording extends React.Component {
         // setTimeout(() => {
         //   this.startRecording();
         // }, 100);
-        if (this.props.ws) {
-          this.getMobile().then(() => {
+      } catch (e) {
+        console.error('相机捕获错误:', e);
+        Alert.alert('提示', e.message);
+        this.props.navigation.goBack();
+      }
+    }
+  }
+
+  start = () => {
+    if (this.props.ws) {
+      this.getMobile().then(() => {
+        if (this.state.recordingState === 0) {
+          this.setState({recordingState: 1}, () => {
             this.props.ws.send(
               JSON.stringify({
                 token: this.props.token,
@@ -73,27 +99,14 @@ class Recording extends React.Component {
               }),
             );
           });
-
-          this.props.ws.onmessage = async e => {
-            const data = JSON.parse(e.data);
-            if (data.cmd === 'chart') {
-              if (data.data.type === 1) {
-                this.startRecording();
-              } else if (data.data.type === 2) {
-                this.isSave = true;
-                await this.camera.stopRecording();
-                await this.props.navigation.goBack();
-              }
-            }
-          };
+        } else {
+          this.setState({recordingState: 0}, () => {
+            this.stopRecording();
+          });
         }
-      } catch (e) {
-        console.error('相机捕获错误:', e);
-        Alert.alert('提示', e.message);
-        this.props.navigation.goBack();
-      }
+      });
     }
-  }
+  };
 
   async startRecording() {
     if (this.camera) {
@@ -201,9 +214,12 @@ class Recording extends React.Component {
           style={styles.captureButton}>
           <Text style={styles.captureIcon}>&#10007;</Text>
         </TouchableOpacity>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           onPress={this.stopRecording.bind(this)}
           style={styles.captureButton}>
+          <Text style={styles.captureIcon}>&#10003;</Text>
+        </TouchableOpacity> */}
+        <TouchableOpacity onPress={this.start} style={styles.captureButton}>
           <Text style={styles.captureIcon}>&#10003;</Text>
         </TouchableOpacity>
       </View>
